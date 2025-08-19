@@ -333,3 +333,138 @@ footer {
   opacity: 1;
   transform: translateY(0);
 }
+
+
+:root{
+  --primary:#0d3b66;        /* refined blue */
+  --accent:#ffcc29;         /* vibrant but not harsh */
+  --bg-soft:#f5f7fb;
+  --ink:#2c3e50;
+  --ink-soft:#5b6b7a;
+}
+
+/* Space below fixed header */
+.page-offset{ padding-top: 95px; }
+
+/* Container helper */
+.container{ max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+/* Steps / progress */
+.wizard-steps{
+  list-style: none;
+  display:flex; flex-wrap:wrap; gap:10px;
+  padding:0; margin: 10px 0 24px;
+}
+.wizard-steps .step{
+  display:flex; align-items:center; gap:10px;
+  background:#ffffff; color:var(--ink);
+  border:1px solid #e6ebf2;
+  padding:10px 14px; border-radius:999px;
+  font-weight:600;
+}
+.wizard-steps .step span{
+  width:28px; height:28px; border-radius:50%;
+  display:inline-grid; place-items:center;
+  background:#eaf3ff; color:var(--primary); font-weight:700;
+}
+.wizard-steps .step.active{
+  border-color:var(--primary); box-shadow:0 4px 12px rgba(13,59,102,.08);
+}
+.wizard-steps .step.active span{ background:var(--primary); color:#fff; }
+
+/* Selection summary chips */
+.selection-summary{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+.chip{
+  display:inline-flex; align-items:center; gap:8px;
+  background:#fff; border:1px solid #e6ebf2; color:var(--ink);
+  padding:6px 12px; border-radius:999px; font-size:.95rem;
+}
+
+/* Panels */
+.panel{ display:none; }
+.panel.active{ display:block; }
+.panel-title{ font-size:1.6rem; color:var(--primary); margin:6px 0 16px; }
+.panel-header{ display:flex; justify-content:flex-start; margin-bottom:8px; }
+.link{
+  background:none; border:none; color:var(--primary);
+  font-weight:600; cursor:pointer; padding:6px 0;
+}
+.link i{ margin-right:6px; }
+
+/* Grids */
+.grid{ display:grid; gap:18px; }
+.subjects-grid{ grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.grades-grid{ grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+.resources-grid{ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+/* Cards */
+.card{
+  background:#fff; border:1px solid #e6ebf2; border-radius:16px;
+  padding:18px; text-align:left; transition:.25s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+}
+.card h3{ margin:8px 0 6px; color:var(--ink); }
+.card p{ color:var(--ink-soft); font-size:.98rem; }
+.card i{
+  font-size:1.6rem; color:var(--primary);
+  background: #eef4ff; padding:10px; border-radius:12px;
+}
+.card:hover{
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 24px rgba(13,59,102,.12);
+}
+.card:focus{ outline:2px solid var(--primary); }
+
+/* Subject card as button */
+.subject-card{
+  display:flex; gap:14px; align-items:flex-start; cursor:pointer;
+  text-align:left;
+}
+
+/* Grades */
+.chip-btn{
+  border:1px solid #e6ebf2; background:#fff; color:var(--ink);
+  padding:12px 16px; border-radius:999px; font-weight:700;
+  cursor:pointer; transition:.2s ease;
+}
+.chip-btn:hover{ border-color:var(--primary); box-shadow:0 6px 18px rgba(13,59,102,.12); transform: translateY(-2px);}
+.chip-btn:focus{ outline:2px solid var(--primary); }
+
+/* Resources as cards/links */
+.resource-card{ display:block; text-decoration:none; }
+.resource-card h3{ margin-top:8px; }
+
+/* Muted text */
+.muted{ color:var(--ink-soft); margin-bottom:14px; }
+
+/* Active state highlight for current panel title */
+.panel.active .panel-title{ position:relative; }
+.panel.active .panel-title::after{
+  content:""; position:absolute; left:0; bottom:-8px; width:60px; height:3px; background:var(--accent); border-radius:3px;
+}
+
+/* Responsive helper for header wrapping */
+@media (max-width: 900px){
+  .page-offset{ padding-top: 120px; } /* header wraps on two lines */
+}
+
+/* Add this in your CSS */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* full height of screen */
+  margin: 0;
+}
+
+main {
+  flex: 1; /* pushes footer down */
+}
+
+footer {
+  background-color: #003366;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+}
+
