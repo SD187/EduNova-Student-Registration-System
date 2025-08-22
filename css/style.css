@@ -468,3 +468,133 @@ footer {
   padding: 10px 0;
 }
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e8f4f8;
+    padding: 20px;
+}
+
+.timetable-container {
+    background: #e8f4f8;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.timetable-header {
+    text-align: center;
+    margin-bottom: 20px;
+    background: #e8f4f8;
+    padding: 20px;
+    border-top: 4px solid #ff8c00;
+}
+
+.timetable-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.schedule-grid:last-child {
+    margin-bottom: 0;
+}
+
+.day-column {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.day-header {
+    background: #34495e;
+    color: white;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.subject-block {
+    background: white;
+}
+
+.subject-name {
+    background: #ff8c00;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 0;
+    padding: 15px;
+    text-align: center;
+}
+
+.time-slots {
+    background: #2196f3;
+    color: white;
+    padding: 15px;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.time-slot {
+    margin: 2px 0;
+}
+
+@media (max-width: 768px) {
+    .schedule-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .schedule-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .timetable-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .timetable-title {
+        font-size: 28px;
+    }
+}
+
+/* Footer */
+footer {
+  background: #2c3e50;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+
+.footer-links a {
+  color: #f1c40f;
+  margin: 0 10px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+
