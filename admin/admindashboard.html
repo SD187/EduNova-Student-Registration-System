@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNova - Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="header-logo-container">
+                    <img src="../assets/logo.jpeg" alt="EduNova Logo" class="header-logo">
+                    <div class="logo">EduNova</div>
+                </div>
+                <nav class="nav-links">
+                    <a href="#" class="active">Home</a>
+                    <a href="#">About Us</a>
+                    <a href="#">Courses</a>
+                    <a href="#">Time Table</a>
+                    <a href="#">Contact</a>
+                </nav>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar">A</div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="../assets/logo.jpeg" alt="EduNova Logo" class="sidebar-logo">
+                    <div class="logo-text">
+                        <div class="sidebar-title">EduNova Admin</div>
+                        <div class="sidebar-subtitle">Administrative Portal</div>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active">
+                    <div class="menu-item-icon"></div>
+                    Dashboard
+                </a>
+                <a href="#" class="menu-item">
+                    <div class="menu-item-icon"></div>
+                    Student Management
+                </a>
+                <a href="#" class="menu-item">
+                    <div class="menu-item-icon"></div>
+                    Teachers
+                </a>
+                <a href="#" class="menu-item">
+                    <div class="menu-item-icon"></div>
+                    Manage Courses
+                </a>
+                <a href="#" class="menu-item">
+                    <div class="menu-item-icon"></div>
+                    Manage Time Table
+                </a>
+                <a href="#" class="menu-item">
+                    <div class="menu-item-icon"></div>
+                    Settings
+                </a>
+            </nav>
+            
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Admin Dashboard</h1>
+                <p class="page-subtitle">Manage your educational institution efficiently</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-value">500 +</div>
+                    <div class="stat-label">Total Students</div>
+                    <div class="stat-change">Active students</div>
+                </div>
+                
+                <div class="stat-card secondary">
+                    <div class="stat-value">1</div>
+                    <div class="stat-label">New Enrollments</div>
+                    <div class="stat-change">Recent activity</div>
+                </div>
+                
+                <div class="stat-card primary">
+                    <div class="stat-value">6 +</div>
+                    <div class="stat-label">Active Courses</div>
+                    <div class="stat-change">Available courses</div>
+                </div>
+                
+                <div class="stat-card secondary">
+                    <div class="stat-value">2 hours ago</div>
+                    <div class="stat-label">Last Activity</div>
+                    <div class="stat-change">Recent update</div>
+                </div>
+            </div>
+
+            <!-- Activity Overview -->
+            <div class="activity-section">
+                <div class="activity-header">
+                    <div>
+                        <div class="activity-title">Activity Overview</div>
+                        <div class="activity-subtitle">Student enrollments over the last 7 months</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+                
+                <div class="activity-stats">
+                    <div class="activity-stat">
+                        <div class="activity-stat-value">247</div>
+                        <div class="activity-stat-label">New Enrollments</div>
+                    </div>
+                    <div class="activity-stat">
+                        <div class="activity-stat-value">94%</div>
+                        <div class="activity-stat-label">Completion Rate</div>
+                    </div>
+                    <div class="activity-stat">
+                        <div class="activity-stat-value">4.8</div>
+                        <div class="activity-stat-label">Avg Rating</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="quick-actions-title">Quick Actions</div>
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="manageCourses()">
+                        Manage Courses
+                    </button>
+                    <button class="action-btn secondary" onclick="manageStudents()">
+                        Manage Students
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

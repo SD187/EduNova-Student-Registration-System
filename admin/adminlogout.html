@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout - EduNova</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="logout-container">
+        <div class="logout-card">
+            <!-- Logo -->
+            <div class="logo-container">
+                <img src="../assets/logo.jpeg" alt="EduNova Logo" class="logo">
+                <h2 class="brand-name">EDUNOVA</h2>
+                <p class="brand-subtitle">Educational Online Learning</p>
+            </div>
+            
+            <!-- Logout Content -->
+            <div class="logout-content">
+                <h1 class="logout-title">Log Out</h1>
+                <p class="logout-message">Are you sure you want to log out?</p>
+                
+                <div class="button-group">
+                    <button class="btn btn-logout" id="confirmLogout">Sign out</button>
+                    <button class="btn btn-cancel" id="cancelLogout">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Logging out...</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
