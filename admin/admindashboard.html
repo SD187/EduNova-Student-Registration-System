@@ -5,149 +5,199 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduNova - Admin Dashboard</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Multiple Chart.js CDN options with automatic fallback -->
+    <script>
+        // Chart.js loading with multiple fallbacks
+        (function() {
+            const cdnUrls = [
+                'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js',
+                'https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.0/chart.umd.js',
+                'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js'
+            ];
+            
+            let currentIndex = 0;
+            
+            function loadChart() {
+                if (currentIndex >= cdnUrls.length) {
+                    console.error('All Chart.js CDNs failed to load');
+                    window.chartLoadFailed = true;
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = cdnUrls[currentIndex];
+                
+                script.onload = function() {
+                    console.log(`Chart.js loaded successfully from: ${cdnUrls[currentIndex]}`);
+                    window.chartLoaded = true;
+                };
+                
+                script.onerror = function() {
+                    console.warn(`Failed to load Chart.js from: ${cdnUrls[currentIndex]}`);
+                    currentIndex++;
+                    loadChart(); // Try next CDN
+                };
+                
+                document.head.appendChild(script);
+            }
+            
+            loadChart();
+        })();
+    </script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-left">
-                <div class="header-logo-container">
-                    <img src="../assets/logo.jpeg" alt="EduNova Logo" class="header-logo">
-                    <div class="logo">EduNova</div>
-                </div>
-                <nav class="nav-links">
-                    <a href="#" class="active">Home</a>
-                    <a href="#">About Us</a>
-                    <a href="#">Courses</a>
-                    <a href="#">Time Table</a>
-                    <a href="#">Contact</a>
-                </nav>
-            </div>
-            <div class="user-menu">
-                <div class="user-avatar">A</div>
-            </div>
-        </header>
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <img src="../assets/logo.jpeg" alt="EduNova Logo" class="nav-logo">
+            <span class="nav-brand">EduNova</span>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-link">Home</a>
+            <a href="#" class="nav-link">About Us</a>
+            <a href="#" class="nav-link">Courses</a>
+            <a href="#" class="nav-link">Free Tools</a>
+            <a href="#" class="nav-link">Contact</a>
+        </nav>
+    </header>
 
+    <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="logo-container">
-                    <img src="../assets/logo.jpeg" alt="EduNova Logo" class="sidebar-logo">
-                    <div class="logo-text">
-                        <div class="sidebar-title">EduNova Admin</div>
-                        <div class="sidebar-subtitle">Administrative Portal</div>
-                    </div>
-                </div>
+                <h3>EduNova Admin</h3>
+                <p class="admin-subtitle">Admin Dashboard</p>
             </div>
             
-            <nav class="sidebar-menu">
-                <a href="#" class="menu-item active">
-                    <div class="menu-item-icon"></div>
-                    Dashboard
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="dashboard">
+                    <i class="icon-dashboard"></i>
+                    <span>Dashboard</span>
                 </a>
-                <a href="#" class="menu-item">
-                    <div class="menu-item-icon"></div>
-                    Student Management
+                <a href="#" class="nav-item" data-section="students">
+                    <i class="icon-students"></i>
+                    <span>Manage Students</span>
                 </a>
-                <a href="#" class="menu-item">
-                    <div class="menu-item-icon"></div>
-                    Teachers
+                <a href="#" class="nav-item" data-section="teachers">
+                    <i class="icon-teachers"></i>
+                    <span>Manage Teachers</span>
                 </a>
-                <a href="#" class="menu-item">
-                    <div class="menu-item-icon"></div>
-                    Manage Courses
+                <a href="#" class="nav-item" data-section="courses">
+                    <i class="icon-courses"></i>
+                    <span>Manage Courses</span>
                 </a>
-                <a href="#" class="menu-item">
-                    <div class="menu-item-icon"></div>
-                    Manage Time Table
+                <a href="#" class="nav-item" data-section="timetable">
+                    <i class="icon-timetable"></i>
+                    <span>Time Table</span>
                 </a>
-                <a href="#" class="menu-item">
-                    <div class="menu-item-icon"></div>
-                    Settings
+                <a href="#" class="nav-item" data-section="settings">
+                    <i class="icon-settings"></i>
+                    <span>Settings</span>
                 </a>
             </nav>
-            
-            <button class="logout-btn" onclick="logout()">Logout</button>
+
+            <div class="logout-section">
+                <a href="logout.html" class="logout-btn">
+                    <i class="icon-logout"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="page-header">
-                <h1 class="page-title">Admin Dashboard</h1>
-                <p class="page-subtitle">Manage your educational institution efficiently</p>
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Admin Dashboard</h1>
+                <p class="dashboard-subtitle">Manage your educational platform efficiently</p>
             </div>
 
-            <!-- Stats Grid -->
+            <!-- Stats Cards -->
             <div class="stats-grid">
-                <div class="stat-card primary">
-                    <div class="stat-value">500 +</div>
-                    <div class="stat-label">Total Students</div>
-                    <div class="stat-change">Active students</div>
-                </div>
-                
-                <div class="stat-card secondary">
-                    <div class="stat-value">1</div>
-                    <div class="stat-label">New Enrollments</div>
-                    <div class="stat-change">Recent activity</div>
-                </div>
-                
-                <div class="stat-card primary">
-                    <div class="stat-value">6 +</div>
-                    <div class="stat-label">Active Courses</div>
-                    <div class="stat-change">Available courses</div>
-                </div>
-                
-                <div class="stat-card secondary">
-                    <div class="stat-value">2 hours ago</div>
-                    <div class="stat-label">Last Activity</div>
-                    <div class="stat-change">Recent update</div>
-                </div>
-            </div>
-
-            <!-- Activity Overview -->
-            <div class="activity-section">
-                <div class="activity-header">
-                    <div>
-                        <div class="activity-title">Activity Overview</div>
-                        <div class="activity-subtitle">Student enrollments over the last 7 months</div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">👥</div>
+                    <div class="stat-content">
+                        <h3>Total Students</h3>
+                        <p class="stat-number" id="totalStudents">500 +</p>
                     </div>
                 </div>
-                
+
+                <div class="stat-card">
+                    <div class="stat-icon blue">👨‍🏫</div>
+                    <div class="stat-content">
+                        <h3>Active Teachers</h3>
+                        <p class="stat-number" id="activeTeachers">1</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">📚</div>
+                    <div class="stat-content">
+                        <h3>Total Courses</h3>
+                        <p class="stat-number" id="totalCourses">6 +</p>
+                        <span class="stat-label">Available Courses</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon purple">⏰</div>
+                    <div class="stat-content">
+                        <h3>Last Updated</h3>
+                        <p class="stat-number" id="lastUpdated">2 hours ago</p>
+                        <span class="stat-label">System Update</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Overview Chart -->
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h2>Activity Overview</h2>
+                    <p class="chart-subtitle">Weekly performance and user activity</p>
+                </div>
                 <div class="chart-container">
                     <canvas id="activityChart"></canvas>
-                </div>
-                
-                <div class="activity-stats">
-                    <div class="activity-stat">
-                        <div class="activity-stat-value">247</div>
-                        <div class="activity-stat-label">New Enrollments</div>
-                    </div>
-                    <div class="activity-stat">
-                        <div class="activity-stat-value">94%</div>
-                        <div class="activity-stat-label">Completion Rate</div>
-                    </div>
-                    <div class="activity-stat">
-                        <div class="activity-stat-value">4.8</div>
-                        <div class="activity-stat-label">Avg Rating</div>
+                    <div class="chart-stats">
+                        <div class="chart-stat">
+                            <span class="stat-value">247</span>
+                            <span class="stat-label">New Enrollments</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="stat-value">94%</span>
+                            <span class="stat-label">Completion Rate</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="stat-value">4.8</span>
+                            <span class="stat-label">Avg Rating</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Quick Actions -->
             <div class="quick-actions">
-                <div class="quick-actions-title">Quick Actions</div>
+                <h2>Quick Actions</h2>
                 <div class="action-buttons">
-                    <button class="action-btn primary" onclick="manageCourses()">
-                        Manage Courses
+                    <button class="action-btn orange" onclick="manageCoursesAction()">
+                        <i class="icon-courses"></i>
+                        <span>Manage Courses</span>
                     </button>
-                    <button class="action-btn secondary" onclick="manageStudents()">
-                        Manage Students
+                    <button class="action-btn blue" onclick="manageStudentsAction()">
+                        <i class="icon-students"></i>
+                        <span>Manage Students</span>
                     </button>
                 </div>
             </div>
         </main>
     </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
 
     <script src="script.js"></script>
 </body>
