@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EduNova – Create Admin Account</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="Design.css" />
+</head>
+<body>
+  <!-- Top brand bar -->
+  <header class="brand-bar">
+    <div class="logo-name">
+      <img src="assets/logo.jpeg" alt="EduNova Logo" class="logo">
+      <span class="institution-name">EduNova</span>
+    </div>
+  </header>
+
+  <!-- Main dark panel -->
+  <main class="panel">
+    <section class="card" role="form" aria-labelledby="formTitle">
+      <div class="" aria-hidden="true"></div>
+      <h1 id="formTitle">Create Admin Account</h1>
+      <p class="subtitle">Set up your administrator account</p>
+
+      <form class="form">
+        <!-- Username -->
+        <label class="field">
+          <span class="field-label">Username</span>
+          <span class="icon left user" aria-hidden="true"></span>
+          <input type="text" name="username" placeholder="Enter your name" required />
+        </label>
+
+        <!-- Security Key -->
+        <label class="field">
+          <span class="field-label">Security Key</span>
+          <span class="icon left key" aria-hidden="true"></span>
+          <input type="text" name="securityKey" placeholder="Choose User Name" required />
+        </label>
+
+        <!-- Password -->
+        <label class="field">
+          <span class="field-label">Password</span>
+          <span class="icon left lock" aria-hidden="true"></span>
+          <span class="icon right eye" aria-hidden="true"></span>
+          <input type="password" name="password" placeholder="Create Password" required />
+        </label>
+
+        <!-- Confirm Password -->
+        <label class="field">
+          <span class="field-label">Confirm Password</span>
+          <span class="icon left lock" aria-hidden="true"></span>
+          <span class="icon right eye" aria-hidden="true"></span>
+          <input type="password" name="confirmPassword" placeholder="Re-enter Password" required />
+        </label>
+
+        <button type="submit" class="btn-primary">Register</button>
+
+        <p class="signin">Already have an account? <a href="#">Sign in</a></p>
+      </form>
+    </section>
+  </main>
+
+  <!-- External JS -->
+  <script src="script.js"></script>
+</body>
+</html>
