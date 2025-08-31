@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNova Admin Dashboard - Manage Courses</title>
+    <link rel="stylesheet" href="css/mcources.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>EduNova Admin</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link" data-page="dashboard">
+                        <span class="icon">📊</span>
+                        Dashboard
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-page="students">
+                        <span class="icon">👥</span>
+                        Manage Students
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-page="teachers">
+                        <span class="icon">👨‍🏫</span>
+                        Manage Teachers
+                    </a></li>
+                    <li><a href="#" class="nav-link active" data-page="courses">
+                        <span class="icon">📚</span>
+                        Manage Courses
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-page="timetable">
+                        <span class="icon">⏰</span>
+                        Manage Time Table
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-page="settings">
+                        <span class="icon">⚙️</span>
+                        Settings
+                    </a></li>
+                    <li><a href="#" class="logout-btn">
+                        <span class="icon">🚪</span>
+                        Logout
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <img src="assets/logo.jpeg" alt="EduNova Logo" class="header-logo">
+                    <span class="company-name">EduNova</span>
+                </div>
+                
+                <nav class="header-nav">
+                    <ul>
+                        <li><a href="#" class="header-nav-link">Home</a></li>
+                        <li><a href="#" class="header-nav-link">About Us</a></li>
+                        <li><a href="#" class="header-nav-link">Courses</a></li>
+                        <li><a href="#" class="header-nav-link">Time Table</a></li>
+                        <li><a href="#" class="header-nav-link">Contact</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="user-profile">
+                    <img src="https://via.placeholder.com/40" alt="User Avatar" class="avatar">
+                </div>
+            </header>
+
+            <div class="content">
+                <h1>Manage Courses</h1>
+                <p class="instructions">* Admins can upload materials to Google Drive and share the link here for easy course access.</p>
+                
+                <div class="form-container">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grade-select">Select Grade</label>
+                            <div class="select-wrapper">
+                                <select id="grade-select" class="custom-select">
+                                    <option value="">Choose Grade</option>
+                                    <option value="grade-1">Grade 1</option>
+                                    <option value="grade-2">Grade 2</option>
+                                    <option value="grade-3">Grade 3</option>
+                                    <option value="grade-4">Grade 4</option>
+                                    <option value="grade-5">Grade 5</option>
+                                    <option value="grade-6">Grade 6</option>
+                                    <option value="grade-7">Grade 7</option>
+                                    <option value="grade-8">Grade 8</option>
+                                    <option value="grade-9">Grade 9</option>
+                                    <option value="grade-10">Grade 10</option>
+                                    <option value="grade-11">Grade 11</option>
+                                    <option value="grade-12">Grade 12</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject-select">Select Subject</label>
+                            <div class="select-wrapper">
+                                <select id="subject-select" class="custom-select">
+                                    <option value="">Choose Subject</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="english">English</option>
+                                    <option value="history">History</option>
+                                    <option value="geography">Geography</option>
+                                    <option value="physics">Physics</option>
+                                    <option value="chemistry">Chemistry</option>
+                                    <option value="biology">Biology</option>
+                                    <option value="computer-science">Computer Science</option>
+                                    <option value="art">Art</option>
+                                    <option value="music">Music</option>
+                                    <option value="physical-education">Physical Education</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="google-drive-link">📤 Upload Google Drive Link</label>
+                        <div class="input-group">
+                            <input type="url" id="google-drive-link" placeholder="https://drive.google.com/...">
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-primary add-course-btn">Add Course</button>
+                        <button class="btn btn-secondary update-course-btn">Update Course</button>
+                        <button class="btn btn-info view-courses-btn">View All Courses</button>
+                    </div>
+                </div>
+
+                <div class="status-message" id="statusMessage" style="display: none;"></div>
+
+                <!-- Course List Display -->
+                <div class="courses-list-container" id="coursesListContainer" style="display: none;">
+                    <h2>Uploaded Courses</h2>
+                    <div class="courses-grid" id="coursesGrid">
+                        <!-- Courses will be dynamically populated here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/mcources.js"></script>
+</body>
+</html>

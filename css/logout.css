@@ -1,0 +1,553 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1d4ed8 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Header Styles */
+.header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+}
+
+.nav-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.nav-text:hover {
+    color: white;
+}
+
+/* Main Container */
+.main-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    position: relative;
+}
+
+.main-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Logout Card */
+.logout-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 10;
+    animation: slideUp 0.6s ease-out;
+    text-align: center;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card Logo Section */
+.card-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.card-logo-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.logo-text {
+    text-align: center;
+}
+
+.logo-text h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin-bottom: 0.25rem;
+    letter-spacing: 1px;
+}
+
+.logo-text p {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 2px;
+}
+
+/* Card Title */
+.card-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: center;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.card-subtitle {
+    text-align: center;
+    color: #64748b;
+    margin-bottom: 2.5rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Logout Actions */
+.logout-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Button Styles */
+.btn {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn-signin {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.btn-signin:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+}
+
+.btn-logout {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-logout:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+.btn-icon {
+    font-size: 1.1rem;
+}
+
+/* Logout Footer */
+.logout-footer {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.session-info {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+#sessionTimer {
+    font-weight: 600;
+    color: #f59e0b;
+}
+
+.back-to-dashboard {
+    color: #3b82f6;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.back-to-dashboard:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.modal-body {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.modal-body p {
+    color: #64748b;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.modal-warning {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: #92400e;
+    font-size: 0.875rem;
+}
+
+.warning-icon {
+    font-size: 1rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-cancel {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-cancel:hover {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.btn-confirm {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-confirm:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+/* Success Modal */
+.success-modal {
+    text-align: center;
+}
+
+.success-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0 auto 1.5rem;
+    animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-modal h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.success-modal p {
+    color: #64748b;
+    line-height: 1.5;
+}
+
+/* Footer */
+.footer {
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.875rem;
+}
+
+/* Loading Animation */
+.btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn.loading::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Session Timer Animation */
+#sessionTimer {
+    transition: color 0.3s ease;
+}
+
+#sessionTimer.warning {
+    color: #ef4444;
+    font-weight: 700;
+    animation: timerBlink 1s infinite;
+}
+
+@keyframes timerBlink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.5; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content {
+        padding: 0 1rem;
+    }
+    
+    .brand-name {
+        font-size: 1.25rem;
+    }
+    
+    .main-container {
+        padding: 1rem;
+    }
+    
+    .logout-card {
+        padding: 2rem 1.5rem;
+        margin: 0 1rem;
+    }
+    
+    .card-title {
+        font-size: 2rem;
+    }
+    
+    .nav-text {
+        font-size: 0.875rem;
+    }
+    
+    .modal-content {
+        padding: 1.5rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .logout-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .card-logo-img {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .logo-text h1 {
+        font-size: 1.25rem;
+    }
+    
+    .card-title {
+        font-size: 1.75rem;
+    }
+    
+    .btn {
+        padding: 0.875rem 1rem;
+    }
+}
+
+/* Accessibility */
+.btn:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.modal-overlay:focus-within .modal-content {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

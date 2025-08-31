@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNova Admin Dashboard</title>
+    <link rel="stylesheet" href="css/mstudent.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>EduNova Admin</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link" data-page="dashboard">
+                        <span class="icon">📊</span>
+                        Dashboard
+                    </a></li>
+                    <li><a href="#" class="nav-link active" data-page="students">
+                        <span class="icon">👥</span>
+                        Manage Students
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-page="teachers">
+                        <span class="icon">👨‍🏫</span>
+                        Manage Teachers
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-page="courses">
+                        <span class="icon">📚</span>
+                        Manage Courses
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-page="timetable">
+                        <span class="icon">⏰</span>
+                        Manage Time Table
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-page="settings">
+                        <span class="icon">⚙️</span>
+                        Settings
+                    </a></li>
+                    <li><a href="#" class="logout-btn">
+                        <span class="icon">🚪</span>
+                        Logout
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <img src="assets/logo.jpeg" alt="EduNova Logo" class="header-logo">
+                    <span class="company-name">EduNova</span>
+                </div>
+                
+                <nav class="header-nav">
+                    <ul>
+                        <li><a href="#" class="header-nav-link">Home</a></li>
+                        <li><a href="#" class="header-nav-link">About Us</a></li>
+                        <li><a href="#" class="header-nav-link">Courses</a></li>
+                        <li><a href="#" class="header-nav-link">Time Table</a></li>
+                        <li><a href="#" class="header-nav-link">Contact</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="user-profile">
+                    <img src="https://via.placeholder.com/40" alt="User Avatar" class="avatar">
+                </div>
+            </header>
+
+            <div class="content">
+                <h1>Manage Students</h1>
+                <p class="instructions">* Paste the Google Form link below to update the registration form for students.</p>
+                
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="google-form-link">📤 Upload google form link</label>
+                        <div class="input-group">
+                            <input type="url" id="google-form-link" placeholder="https://docs.google.com/forms/...">
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-primary add-link-btn">Add Link</button>
+                        <button class="btn btn-secondary update-link-btn">Update Link</button>
+                    </div>
+                </div>
+
+                <div class="status-message" id="statusMessage" style="display: none;"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/mstudent.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduNova - Create Admin Account</title>
+  <link rel="stylesheet" href="css/createaccount.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="signup-body">
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <img src="assets/logo.jpeg" alt="EduNova Logo" class="top-logo">
+    <span class="brand-name">EduNova</span>
+  </div>
+
+  <!-- Signup Form Container -->
+  <div class="signup-container">
+    <div class="signup-box">
+      <img src="assets/logo.jpeg" alt="Logo" class="entry-logo">
+      <h2>Create Admin Account</h2>
+      <p class="entry-subtext">Set up your administrator account</p>
+
+      <form id="signupForm">
+        <div class="input-group">
+          <label for="username">
+            <i class="fas fa-user"></i> Username
+          </label>
+          <input type="text" id="username" placeholder="Enter your name" required>
+        </div>
+
+        <div class="input-group">
+          <label for="securityKey">
+            <i class="fas fa-key"></i> Security Key
+          </label>
+          <input type="text" id="securityKey" placeholder="Choose User Name" required>
+        </div>
+
+        <div class="input-group">
+          <label for="password">
+            <i class="fas fa-lock"></i> Password
+          </label>
+          <input type="password" id="password" placeholder="Create Password" required>
+          <i class="fas fa-eye toggle-password" onclick="togglePassword('password')"></i>
+        </div>
+
+        <div class="input-group">
+          <label for="confirmPassword">
+            <i class="fas fa-lock"></i> Confirm Password
+          </label>
+          <input type="password" id="confirmPassword" placeholder="Re-enter Password" required>
+          <i class="fas fa-eye toggle-confirm-password" onclick="togglePassword('confirmPassword')"></i>
+        </div>
+
+        <button type="submit" class="register-btn">Register</button>
+
+        <p class="signin-link">
+          Already have an account? 
+          <a href="adminLogin.html" onclick="signIn()">Sign In</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/account.js"></script>
+</body>
+</html>
