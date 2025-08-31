@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNova - Manage Teachers</title>
+    <link rel="stylesheet" href="D:\Edu\css\mteachers.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="D:\Edu\assets\logo.jpeg" alt="EduNova Logo" class="logo">
+                <span class="logo-text">EduNova</span>
+            </div>
+            <div class="header-right">
+                <nav class="header-nav">
+                    <a href="#" class="nav-link">Home</a>
+                    <a href="#" class="nav-link">About Us</a>
+                    <a href="#" class="nav-link">Courses</a>
+                    <a href="#" class="nav-link">Time Table</a>
+                    <a href="#" class="nav-link">Contact</a>
+                </nav>
+                <button class="logout-btn">
+                    <span class="logout-icon">⟵</span>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="D:\Edu\assets\logo.jpeg" alt="EduNova Logo" class="sidebar-logo">
+                <span class="sidebar-title">EduNova Admin</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    Manage Students
+                </a>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">👨‍🏫</span>
+                    Manage Teachers
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📚</span>
+                    Manage Courses
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📅</span>
+                    Manage Time Table
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+
+            <button class="sidebar-logout">
+                <span class="logout-icon">⟵</span>
+                Logout
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <h1 class="page-title">Manage Teachers</h1>
+            </div>
+
+            <!-- Teacher Management Form -->
+            <div class="teacher-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="teacherName" placeholder="Name with Initials" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <select id="teacherSubject" class="form-select">
+                            <option value="">Select Subject</option>
+                            <option value="mathematics">Mathematics</option>
+                            <option value="english">English</option>
+                            <option value="science">Science</option>
+                            <option value="history">History</option>
+                            <option value="geography">Geography</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="tel" id="contactNo" placeholder="Contact No" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" placeholder="Email" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="addTeacher()">Add Teacher</button>
+                </div>
+            </div>
+
+            <!-- Teachers Table -->
+            <div class="table-container">
+                <table class="teachers-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>Contact No</th>
+                            <th>Email</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teachersTableBody">
+                        <!-- Dynamic content will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="D:\Edu\js\mteachers.js"></script>
+</body>
+</html>
