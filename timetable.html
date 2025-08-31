@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>School Timetable</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    .timetable-container, footer {
+      display: none; /* hide initially */
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -24,121 +31,105 @@
     </div>
   </header>
 
-  <!-- 🔹 Timetable Container -->
-  <div class="timetable-container">
-    <div class="timetable-header">
-    </div>
+  <!-- Timetable Container -->
+  <div class="timetable-container"></div>
 
-    <!-- First Row: Monday to Wednesday -->
-    <div class="schedule-grid">
-      <!-- Monday -->
-      <div class="day-column">
-        <div class="day-header">Monday</div>
-        <div class="subject-block">
-          <div class="subject-name">M A T H E M A T I C S</div>
-          <div class="time-slots">
-            <div class="time-slot">3:30 PM-5:30 PM - Grade 6</div>
-            <div class="time-slot">3:30 PM-5:30 PM - Grade 7</div>
-            <div class="time-slot">6:00 PM-8:00 PM - Grade 8</div>
-            <div class="time-slot">6:00 PM-8:00 PM - Grade 9</div>
-            <div class="time-slot">8:00 PM-10:00 PM - Grade 10</div>
-            <div class="time-slot">8:00 PM-10:00 PM - Grade 11</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tuesday -->
-      <div class="day-column">
-        <div class="day-header">Tuesday</div>
-        <div class="subject-block">
-          <div class="subject-name">S C I E N C E</div>
-          <div class="time-slots">
-            <div class="time-slot">3:30 PM-5:30 PM - Grade 6</div>
-            <div class="time-slot">3:30 PM-5:30 PM - Grade 7</div>
-            <div class="time-slot">6:00 PM-8:00 PM - Grade 8</div>
-            <div class="time-slot">6:00 PM-8:00 PM - Grade 9</div>
-            <div class="time-slot">8:00 PM-10:00 PM - Grade 10</div>
-            <div class="time-slot">8:00 PM-10:00 PM - Grade 11</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Wednesday -->
-      <div class="day-column">
-        <div class="day-header">Wednesday</div>
-        <div class="subject-block">
-          <div class="subject-name">S I N H A L A</div>
-          <div class="time-slots">
-            <div class="time-slot">3:30 PM-5:30 PM - Grade 6</div>
-            <div class="time-slot">3:30 PM-5:30 PM - Grade 7</div>
-            <div class="time-slot">6:00 PM-8:00 PM - Grade 8</div>
-            <div class="time-slot">6:00 PM-8:00 PM - Grade 9</div>
-            <div class="time-slot">8:00 PM-10:00 PM - Grade 10</div>
-            <div class="time-slot">8:00 PM-10:00 PM - Grade 11</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Second Row: Thursday to Saturday -->
-    <div class="schedule-grid">
-      <!-- Thursday -->
-      <div class="day-column">
-        <div class="day-header">Thursday</div>
-        <div class="subject-block">
-          <div class="subject-name">E N G L I S H</div>
-          <div class="time-slots">
-            <div class="time-slot">3:30 PM-5:30 PM - Grade 6</div>
-            <div class="time-slot">3:30 PM-5:30 PM - Grade 7</div>
-            <div class="time-slot">6:00 PM-8:00 PM - Grade 8</div>
-            <div class="time-slot">6:00 PM-8:00 PM - Grade 9</div>
-            <div class="time-slot">8:00 PM-10:00 PM - Grade 10</div>
-            <div class="time-slot">8:00 PM-10:00 PM - Grade 11</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Friday -->
-      <div class="day-column">
-        <div class="day-header">Friday</div>
-        <div class="subject-block">
-          <div class="subject-name">H I S T O R Y</div>
-          <div class="time-slots">
-            <div class="time-slot">3:30 PM-5:30 PM  -  Grade 6</div>
-            <div class="time-slot">3:30 PM-5:30 PM  -  Grade 7</div>
-            <div class="time-slot">6:00 PM-8:00 PM  -  Grade 8</div>
-            <div class="time-slot">6:00 PM-8:00 PM  -  Grade 9</div>
-            <div class="time-slot">8:00 PM-10:00 PM -  Grade 10</div>
-            <div class="time-slot">8:00 PM-10:00 PM -  Grade 11</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Saturday -->
-      <div class="day-column">
-        <div class="day-header">Saturday</div>
-        <div class="subject-block">
-          <div class="subject-name">B U D D H I S M</div>
-          <div class="time-slots">
-            <div class="time-slot">3:30 PM-5:30 PM  -     Grade 6</div>
-            <div class="time-slot">3:30 PM-5:30 PM  -     Grade 7</div>
-            <div class="time-slot">6:00 PM-8:00 PM  -     Grade 8</div>
-            <div class="time-slot">6:00 PM-8:00 PM  -     Grade 9</div>
-            <div class="time-slot">8:00 PM-10:00 PM -     Grade 10</div>
-            <div class="time-slot">8:00 PM-10:00 PM -     Grade 11</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
- <footer>
+  <footer>
     <p>&copy; 2025 EduNova Academy | All Rights Reserved</p>
-    <div class="footer-links">
-      <a href="privacy.html">Privacy Policy</a> | 
-      <a href="terms.html">Terms & Conditions</a> | 
-      <a href="contact.html">Contact Us</a>
+    <div class="footer-middle">
+      <span><i class="fas fa-map-marker-alt"></i> Embilipitiya, Sri Lanka</span> |
+      <span><i class="fas fa-envelope"></i> edunovaacademy.lk@gmail.com</span> |
+      <span><i class="fas fa-phone"></i> 0728561668 / 0711733650</span>
     </div>
   </footer>
+
+  <script>
+    const url = "http://localhost:5000/api/timetable";
+
+    async function loadTimetable() {
+      const container = document.querySelector(".timetable-container");
+      const footer = document.querySelector("footer");
+
+      try {
+        const response = await fetch(url);
+        const timetable = await response.json();
+
+        container.innerHTML = "";
+
+        if (!timetable.entries || timetable.entries.length === 0) {
+          container.innerHTML = "<p>No timetable found.</p>";
+        } else {
+          const days = {};
+          timetable.entries.forEach(entry => {
+            if (!days[entry.day]) days[entry.day] = [];
+            days[entry.day].push(entry);
+          });
+
+          const daysOfWeek = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+          const rowSize = 2;
+
+          for (let i = 0; i < daysOfWeek.length; i += rowSize) {
+            const gridRow = document.createElement("div");
+            gridRow.className = "schedule-grid";
+
+            const rowDays = daysOfWeek.slice(i, i + rowSize);
+            rowDays.forEach(day => {
+              if (!days[day]) return;
+
+              const dayColumn = document.createElement("div");
+              dayColumn.className = "day-column";
+
+              const dayHeader = document.createElement("div");
+              dayHeader.className = "day-header";
+              dayHeader.textContent = day;
+              dayColumn.appendChild(dayHeader);
+
+              const subjectsByName = {};
+              days[day].forEach(entry => {
+                if (!subjectsByName[entry.subject]) subjectsByName[entry.subject] = [];
+                subjectsByName[entry.subject].push(entry);
+              });
+
+              for (const subject in subjectsByName) {
+                const subjectBlock = document.createElement("div");
+                subjectBlock.className = "subject-block";
+
+                const subjectName = document.createElement("div");
+                subjectName.className = "subject-name";
+                subjectName.textContent = subject.toUpperCase();
+                subjectBlock.appendChild(subjectName);
+
+                const timeSlots = document.createElement("div");
+                timeSlots.className = "time-slots";
+
+                subjectsByName[subject].forEach(entry => {
+                  const slot = document.createElement("div");
+                  slot.className = "time-slot";
+                  slot.textContent = `${entry.time} - ${entry.grade}`;
+                  timeSlots.appendChild(slot);
+                });
+
+                subjectBlock.appendChild(timeSlots);
+                dayColumn.appendChild(subjectBlock);
+              }
+
+              gridRow.appendChild(dayColumn);
+            });
+
+            container.appendChild(gridRow);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load timetable:", err);
+        container.innerHTML = "<p>Error loading timetable.</p>";
+      } finally {
+        // Show timetable and footer only after loading
+        container.style.display = "block";
+        footer.style.display = "block";
+      }
+    }
+
+    loadTimetable();
+  </script>
 </body>
 </html>
