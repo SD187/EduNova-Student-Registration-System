@@ -1,76 +1,142 @@
 // AdminFront JavaScript functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Get button elements
+    console.log('EduNova Admin frontend initializing...');
+
+    // Get button elements (with null checks)
     const adminLoginBtn = document.getElementById('adminLogin');
     const createAccountBtn = document.getElementById('createAccount');
 
-    // Add click event listeners
-    adminLoginBtn.addEventListener('click', handleAdminLogin);
-    createAccountBtn.addEventListener('click', handleCreateAccount);
+    // Only add listeners if elements exist
+    if (adminLoginBtn) {
+        adminLoginBtn.addEventListener('click', handleAdminLogin);
+        console.log('Admin login button found and configured');
+    } else {
+        console.warn('Admin login button not found');
+    }
+
+    if (createAccountBtn) {
+        createAccountBtn.addEventListener('click', handleCreateAccount);
+        console.log('Create account button found and configured');
+    } else {
+        console.warn('Create account button not found');
+    }
 
     // Add keyboard navigation
     document.addEventListener('keydown', handleKeyboardNavigation);
 
-    // Add loading animation utility
+    // Loading state utilities
     function addLoadingState(button) {
-        button.classList.add('loading');
-        button.disabled = true;
+        if (button) {
+            button.classList.add('loading');
+            button.disabled = true;
+            button.textContent = 'Loading...';
+        }
     }
 
-    function removeLoadingState(button) {
-        button.classList.remove('loading');
-        button.disabled = false;
+    function removeLoadingState(button, originalText) {
+        if (button) {
+            button.classList.remove('loading');
+            button.disabled = false;
+            button.textContent = originalText || 'Admin Login';
+        }
     }
 
     // Handle Admin Login
     function handleAdminLogin() {
         console.log('Admin Login clicked');
         
-        // Add loading state
-        addLoadingState(adminLoginBtn);
-        
-        // Simulate loading delay
-        setTimeout(() => {
-            // Remove loading state
-            removeLoadingState(adminLoginBtn);
+        if (adminLoginBtn) {
+            addLoadingState(adminLoginBtn);
             
-            // Here you would typically redirect to admin login page
-            // window.location.href = 'admin-login.html';
-            
-            // For demo purposes, show an alert
-            alert('Redirecting to Admin Login page...');
-            
-            // You can replace this with actual navigation logic
-            // Example: window.location.href = '/admin/login';
-        }, 1000);
+            // Check if this is a navigation button or actual login
+            if (window.location.pathname.includes('adminfront.html')) {
+                // This is the main page - navigate to login page
+                setTimeout(() => {
+                    removeLoadingState(adminLoginBtn, 'Admin Login');
+                    window.location.href = 'adminlogin.html';
+                }, 500);
+            } else {
+                // This might be an actual login form
+                performLogin();
+            }
+        }
     }
 
     // Handle Create Account
     function handleCreateAccount() {
         console.log('Create Account clicked');
         
-        // Add loading state
-        addLoadingState(createAccountBtn);
-        
-        // Simulate loading delay
-        setTimeout(() => {
-            // Remove loading state
-            removeLoadingState(createAccountBtn);
+        if (createAccountBtn) {
+            addLoadingState(createAccountBtn);
             
-            // Here you would typically redirect to registration page
-            // window.location.href = 'register.html';
+            setTimeout(() => {
+                removeLoadingState(createAccountBtn, 'Create Account');
+                window.location.href = 'adminregister.html';
+            }, 500);
+        }
+    }
+
+    // Actual login function (for login forms)
+    async function performLogin() {
+        try {
+            // Get form data (adjust selectors based on your HTML)
+            const usernameField = document.getElementById('username') || document.querySelector('input[name="username"]');
+            const passwordField = document.getElementById('password') || document.querySelector('input[name="password"]');
             
-            // For demo purposes, show an alert
-            alert('Redirecting to Account Creation page...');
-            
-            // You can replace this with actual navigation logic
-            // Example: window.location.href = '/admin/register';
-        }, 1000);
+            if (!usernameField || !passwordField) {
+                console.error('Username or password field not found');
+                alert('Login form elements not found');
+                return;
+            }
+
+            const credentials = {
+                username: usernameField.value.trim(),
+                password: passwordField.value.trim()
+            };
+
+            if (!credentials.username || !credentials.password) {
+                alert('Please enter both username and password');
+                return;
+            }
+
+            console.log('Attempting login with:', credentials.username);
+
+            // Make API call to backend
+            const response = await fetch('http://localhost:5000/api/admin/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(credentials)
+            });
+
+            const data = await response.json();
+            console.log('Login response:', data);
+
+            if (response.ok) {
+                // Store token for future requests
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('adminData', JSON.stringify(data.admin));
+                
+                alert('Login successful!');
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                alert(data.message || 'Login failed');
+            }
+
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('Connection error. Make sure the backend server is running.');
+        } finally {
+            if (adminLoginBtn) {
+                removeLoadingState(adminLoginBtn, 'Login');
+            }
+        }
     }
 
     // Handle keyboard navigation
     function handleKeyboardNavigation(event) {
-        // Enter key on focused button
         if (event.key === 'Enter') {
             const focusedElement = document.activeElement;
             if (focusedElement === adminLoginBtn) {
@@ -85,12 +151,14 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
             const focusedElement = document.activeElement;
             
-            if (focusedElement === adminLoginBtn) {
-                createAccountBtn.focus();
-            } else if (focusedElement === createAccountBtn) {
-                adminLoginBtn.focus();
-            } else {
-                adminLoginBtn.focus();
+            if (adminLoginBtn && createAccountBtn) {
+                if (focusedElement === adminLoginBtn) {
+                    createAccountBtn.focus();
+                } else if (focusedElement === createAccountBtn) {
+                    adminLoginBtn.focus();
+                } else {
+                    adminLoginBtn.focus();
+                }
             }
         }
     }
@@ -161,29 +229,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Remove ripple after animation
         setTimeout(() => {
-            ripple.remove();
+            if (ripple.parentNode) {
+                ripple.remove();
+            }
         }, 600);
     }
 
-    // Initialize animations
+    // Initialize animations only if elements exist
     initializeAnimations();
 
-    // Add page load animation
+    // Safe page load animation
     function initializePageAnimations() {
         const adminCard = document.querySelector('.admin-card');
         const header = document.querySelector('.header');
         
-        // Animate header
-        header.style.opacity = '0';
-        header.style.transform = 'translateY(-20px)';
+        // Animate header if it exists
+        if (header) {
+            header.style.opacity = '0';
+            header.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                header.style.transition = 'all 0.6s ease-out';
+                header.style.opacity = '1';
+                header.style.transform = 'translateY(0)';
+            }, 200);
+        }
         
-        setTimeout(() => {
-            header.style.transition = 'all 0.6s ease-out';
-            header.style.opacity = '1';
-            header.style.transform = 'translateY(0)';
-        }, 200);
-        
-        // Animate buttons individually
+        // Animate buttons individually if they exist
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach((button, index) => {
             button.style.opacity = '0';
@@ -200,27 +272,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize page animations
     initializePageAnimations();
 
-    // Form validation utilities (for future use)
-    const validation = {
-        isValidEmail: function(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        },
-        
-        isValidPassword: function(password) {
-            // At least 8 characters, 1 uppercase, 1 lowercase, 1 number
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
-            return passwordRegex.test(password);
-        },
-        
-        isEmpty: function(value) {
-            return !value || value.trim().length === 0;
-        }
-    };
-
-    // Utility functions for future API integration
+    // API utility for backend communication
     const api = {
-        baseUrl: '/api', // Configure based on your backend
+        baseUrl: 'http://localhost:5000/api',
         
         async request(endpoint, options = {}) {
             const url = `${this.baseUrl}${endpoint}`;
@@ -233,10 +287,12 @@ document.addEventListener('DOMContentLoaded', function() {
             };
 
             try {
+                console.log(`Making API request to: ${url}`);
                 const response = await fetch(url, config);
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
                 
                 return await response.json();
@@ -258,6 +314,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 body: JSON.stringify(userData)
             });
+        },
+
+        async getStudents(page = 1, limit = 10, search = '') {
+            const token = localStorage.getItem('authToken');
+            return this.request(`/students?page=${page}&limit=${limit}&search=${search}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+        }
+    };
+
+    // Form validation utilities
+    const validation = {
+        isValidEmail: function(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        },
+        
+        isValidPassword: function(password) {
+            return password && password.length >= 6;
+        },
+        
+        isEmpty: function(value) {
+            return !value || value.trim().length === 0;
         }
     };
 
@@ -269,43 +350,5 @@ document.addEventListener('DOMContentLoaded', function() {
         removeLoadingState
     };
 
-    console.log('EduNova Admin frontend initialized successfully!');
-});
-
-
-
-
-// Simple Navigation - Add this to your adminfront.js
-document.addEventListener('DOMContentLoaded', function() {
-    // Get buttons
-    const adminLoginBtn = document.getElementById('adminLogin');
-    const createAccountBtn = document.getElementById('createAccount');
-
-    // Admin Login button - navigate to adminlogin.html
-    adminLoginBtn.addEventListener('click', function() {
-        window.location.href = 'adminlogin.html';
-    });
-
-    // Create Account button - navigate to register page
-    createAccountBtn.addEventListener('click', function() {
-        window.location.href = 'adminregister.html';
-    });
-});
-
-
-// Simple Navigation - Add this to your adminfront.js
-document.addEventListener('DOMContentLoaded', function() {
-    // Get buttons
-    const adminLoginBtn = document.getElementById('adminLogin');
-    const createAccountBtn = document.getElementById('createAccount');
-
-    // Admin Login button - navigate to adminlogin.html
-    adminLoginBtn.addEventListener('click', function() {
-        window.location.href = 'adminlogin.html';
-    });
-
-    // Create Account button - navigate to createaccount.html
-    createAccountBtn.addEventListener('click', function() {
-        window.location.href = 'createaccount.html';
-    });
+    console.log('✅ EduNova Admin frontend initialized successfully!');
 });
