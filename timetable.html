@@ -44,7 +44,7 @@
   </footer>
 
   <script>
-    const url = "http://localhost:5000/api/timetable";
+    const url = `${window.location.origin}/api/timetable`;
 
     async function loadTimetable() {
       const container = document.querySelector(".timetable-container");
@@ -61,8 +61,10 @@
         } else {
           const days = {};
           timetable.entries.forEach(entry => {
-            if (!days[entry.day]) days[entry.day] = [];
-            days[entry.day].push(entry);
+            const dateStr = entry.date;
+            const dayName = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long' });
+            if (!days[dayName]) days[dayName] = [];
+            days[dayName].push(entry);
           });
 
           const daysOfWeek = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -86,8 +88,9 @@
 
               const subjectsByName = {};
               days[day].forEach(entry => {
-                if (!subjectsByName[entry.subject]) subjectsByName[entry.subject] = [];
-                subjectsByName[entry.subject].push(entry);
+                const subj = (entry.subject || '').toString();
+                if (!subjectsByName[subj]) subjectsByName[subj] = [];
+                subjectsByName[subj].push(entry);
               });
 
               for (const subject in subjectsByName) {
@@ -105,7 +108,9 @@
                 subjectsByName[subject].forEach(entry => {
                   const slot = document.createElement("div");
                   slot.className = "time-slot";
-                  slot.textContent = `${entry.time} - ${entry.grade}`;
+                  const time = `${entry.start_time || entry.startTime} - ${entry.end_time || entry.endTime}`;
+                  const grade = (entry.grade || '').toString().replace('grade-','');
+                  slot.textContent = `${time} - Grade ${grade}`;
                   timeSlots.appendChild(slot);
                 });
 

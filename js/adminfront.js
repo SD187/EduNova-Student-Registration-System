@@ -48,17 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (adminLoginBtn) {
             addLoadingState(adminLoginBtn);
             
-            // Check if this is a navigation button or actual login
-            if (window.location.pathname.includes('adminfront.html')) {
-                // This is the main page - navigate to login page
-                setTimeout(() => {
-                    removeLoadingState(adminLoginBtn, 'Admin Login');
-                    window.location.href = 'adminlogin.html';
-                }, 500);
-            } else {
-                // This might be an actual login form
-                performLogin();
-            }
+            // Navigate to admin login page
+            setTimeout(() => {
+                removeLoadingState(adminLoginBtn, 'Admin Login');
+                window.location.href = 'adminlogin.html';
+            }, 500);
         }
     }
 
@@ -71,68 +65,16 @@ document.addEventListener('DOMContentLoaded', function() {
             
             setTimeout(() => {
                 removeLoadingState(createAccountBtn, 'Create Account');
-                window.location.href = 'adminregister.html';
+                window.location.href = 'createaccount.html';
             }, 500);
         }
     }
 
     // Actual login function (for login forms)
-    async function performLogin() {
-        try {
-            // Get form data (adjust selectors based on your HTML)
-            const usernameField = document.getElementById('username') || document.querySelector('input[name="username"]');
-            const passwordField = document.getElementById('password') || document.querySelector('input[name="password"]');
-            
-            if (!usernameField || !passwordField) {
-                console.error('Username or password field not found');
-                alert('Login form elements not found');
-                return;
-            }
-
-            const credentials = {
-                username: usernameField.value.trim(),
-                password: passwordField.value.trim()
-            };
-
-            if (!credentials.username || !credentials.password) {
-                alert('Please enter both username and password');
-                return;
-            }
-
-            console.log('Attempting login with:', credentials.username);
-
-            // Make API call to backend
-            const response = await fetch('http://localhost:5000/api/admin/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(credentials)
-            });
-
-            const data = await response.json();
-            console.log('Login response:', data);
-
-            if (response.ok) {
-                // Store token for future requests
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('adminData', JSON.stringify(data.admin));
-                
-                alert('Login successful!');
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
-            } else {
-                alert(data.message || 'Login failed');
-            }
-
-        } catch (error) {
-            console.error('Login error:', error);
-            alert('Connection error. Make sure the backend server is running.');
-        } finally {
-            if (adminLoginBtn) {
-                removeLoadingState(adminLoginBtn, 'Login');
-            }
-        }
+    // Navigate to admin login page
+    function navigateToAdminLogin() {
+        console.log('Navigating to admin login page...');
+        window.location.href = 'adminlogin.html';
     }
 
     // Handle keyboard navigation

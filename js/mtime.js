@@ -7,6 +7,7 @@ class TimeTableManager {
         this.selectedStartTime = null;
         this.selectedEndTime = null;
         this.timeTableData = {};
+        this.apiBase = `${window.location.origin}/api`;
         
         this.init();
     }
@@ -102,6 +103,10 @@ class TimeTableManager {
             item.addEventListener('click', () => {
                 navItems.forEach(nav => nav.classList.remove('active'));
                 item.classList.add('active');
+                const href = item.getAttribute('href');
+                if (href) {
+                    window.location.href = href;
+                }
             });
         });
 
@@ -144,7 +149,7 @@ class TimeTableManager {
         this.selectedGrade = gradeValue;
         this.updateButtonText('gradeBtn', gradeName);
         this.updateSelectedInfo();
-        this.renderTimeTable();
+        this.fetchAndRender();
         
         const gradeItems = document.querySelectorAll('#gradeDropdown .dropdown-item');
         gradeItems.forEach(item => item.classList.remove('selected'));
@@ -155,7 +160,7 @@ class TimeTableManager {
         this.selectedSubject = subjectValue;
         this.updateButtonText('subjectBtn', subjectName);
         this.updateSelectedInfo();
-        this.renderTimeTable();
+        this.fetchAndRender();
         
         const subjectItems = document.querySelectorAll('#subjectDropdown .dropdown-item');
         subjectItems.forEach(item => item.classList.remove('selected'));
@@ -224,24 +229,34 @@ class TimeTableManager {
             this.showError('Please fill in all required fields');
             return;
         }
-
-        const key = `${this.selectedGrade}-${this.selectedSubject}`;
-        
-        if (!this.timeTableData[key]) {
-            this.timeTableData[key] = [];
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+            this.showError('Please login to add timetable entries');
+            setTimeout(() => window.location.href = 'adminlogin.html', 800);
+            return;
         }
-
-        const newEntry = {
+        const payload = {
+            subject: this.selectedSubject,
+            grade: this.selectedGrade,
             date: this.selectedDate,
-            startTime: this.selectedStartTime,
-            endTime: this.selectedEndTime,
-            id: Date.now()
+            start_time: this.selectedStartTime,
+            end_time: this.selectedEndTime
         };
-
-        this.timeTableData[key].push(newEntry);
-        this.renderTimeTable();
-        this.showSuccess('Time table entry added successfully!');
-        this.resetForm();
+        fetch(`${this.apiBase}/timetable`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        }).then(async (res) => {
+            const contentType = res.headers.get('content-type') || '';
+            const data = contentType.includes('application/json') ? await res.json() : { message: await res.text() };
+            if (!res.ok) throw new Error(data.message || 'Failed to add entry');
+            this.showSuccess('Time table entry added successfully!');
+            this.fetchAndRender();
+            this.resetForm();
+        }).catch(err => this.showError(err.message));
     }
 
     validateSelection() {
@@ -320,8 +335,8 @@ class TimeTableManager {
             
             dayEntries.forEach(entry => {
                 tableHTML += `
-                    <span class="time-slot" data-id="${entry.id}">
-                        ${entry.startTime} - ${entry.endTime}
+                    <span class="time-slot" data-id="${entry._id || entry.id}">
+                        ${entry.start_time || entry.startTime} - ${entry.end_time || entry.endTime}
                     </span>
                 `;
             });
@@ -356,7 +371,7 @@ class TimeTableManager {
                 groups[date] = [];
             }
             groups[date].push(entry);
-            groups[date].sort((a, b) => a.startTime.localeCompare(b.startTime));
+            groups[date].sort((a, b) => (a.start_time || a.startTime).localeCompare(b.start_time || b.startTime));
             return groups;
         }, {});
     }
@@ -442,52 +457,20 @@ class TimeTableManager {
     }
 
     loadSampleData() {
-        this.timeTableData = {
-            'grade-8-mathematics': [
-                {
-                    id: 1,
-                    date: '2025-09-01',
-                    startTime: '08:00',
-                    endTime: '09:00'
-                },
-                {
-                    id: 2,
-                    date: '2025-09-01',
-                    startTime: '10:00',
-                    endTime: '11:00'
-                },
-                {
-                    id: 3,
-                    date: '2025-09-03',
-                    startTime: '09:00',
-                    endTime: '10:00'
-                }
-            ],
-            'grade-8-english': [
-                {
-                    id: 4,
-                    date: '2025-09-02',
-                    startTime: '08:30',
-                    endTime: '09:30'
-                }
-            ],
-            'grade-9-sinhala': [
-                {
-                    id: 5,
-                    date: '2025-09-01',
-                    startTime: '11:00',
-                    endTime: '12:00'
-                }
-            ],
-            'grade-10-buddhism': [
-                {
-                    id: 6,
-                    date: '2025-09-04',
-                    startTime: '14:00',
-                    endTime: '15:00'
-                }
-            ]
-        };
+        this.timeTableData = {};
+    }
+
+    fetchAndRender() {
+        if (!this.selectedGrade || !this.selectedSubject) return;
+        const grade = this.selectedGrade.replace('grade-', '');
+        fetch(`${this.apiBase}/timetable?subject=${encodeURIComponent(this.selectedSubject)}&grade=${encodeURIComponent(grade)}`)
+            .then(res => res.json())
+            .then(data => {
+                const key = `${this.selectedGrade}-${this.selectedSubject}`;
+                this.timeTableData[key] = (data.entries || []).map(e => ({ ...e }));
+                this.renderTimeTable();
+            })
+            .catch(() => this.renderTimeTable());
     }
 
     logout() {

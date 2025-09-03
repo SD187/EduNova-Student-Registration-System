@@ -26,11 +26,12 @@ body {
 }
 
 .header-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0 1rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
 }
 

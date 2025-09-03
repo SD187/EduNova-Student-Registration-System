@@ -18,8 +18,34 @@ let appState = {
     currentUser: 'Admin User',
     currentPage: 'courses',
     activityLog: [],
-    selectedCourse: null
+    selectedCourse: null,
+    apiBase: `${window.location.origin}/api`
 };
+
+function getAuthToken() {
+    return localStorage.getItem('adminToken');
+}
+
+function ensureAuthenticated() {
+    const token = getAuthToken();
+    if (!token) {
+        showMessage('Please login to access this page', 'error');
+        setTimeout(() => {
+            window.location.href = 'adminlogin.html';
+        }, 1200);
+        throw new Error('Not authenticated');
+    }
+    return token;
+}
+
+async function parseJsonSafe(response) {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+        return await response.json();
+    }
+    const text = await response.text();
+    return { __nonJson: true, text };
+}
 
 // Utility functions
 function showMessage(message, type = 'success') {
@@ -76,7 +102,7 @@ function generateCourseId() {
 }
 
 // Main event handlers
-function handleAddCourse() {
+async function handleAddCourse() {
     const grade = gradeSelect.value;
     const subject = subjectSelect.value;
     const driveLink = googleDriveInput.value.trim();
@@ -117,44 +143,36 @@ function handleAddCourse() {
     }
     
     addLoadingState(addCourseBtn);
-    
-    // Simulate API call
-    setTimeout(() => {
-        const newCourse = {
-            id: generateCourseId(),
-            grade: grade,
-            subject: subject,
-            driveLink: driveLink,
-            dateAdded: new Date().toISOString(),
-            status: 'active',
-            addedBy: appState.currentUser
-        };
-        
-        appState.courses.push(newCourse);
-        
-        removeLoadingState(addCourseBtn);
-        showMessage(`Course added successfully! ${getGradeDisplayName(grade)} - ${getSubjectDisplayName(subject)} is now available.`, 'success');
-        
-        // Clear form
-        clearForm();
-        
-        // Log activity
-        logActivity('ADD_COURSE', { 
-            courseId: newCourse.id,
-            grade: grade,
-            subject: subject,
-            driveLink: driveLink
+    try {
+        const token = ensureAuthenticated();
+        const res = await fetch(`${appState.apiBase}/course-resources`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ subject, grade, link: driveLink })
         });
-        
-        // Update courses display if visible
-        if (coursesListContainer.style.display !== 'none') {
-            displayCourses();
+        const data = await parseJsonSafe(res);
+        if (!res.ok) {
+            if (data && !data.__nonJson && data.message) throw new Error(data.message);
+            if (data && data.__nonJson) throw new Error(data.text?.slice(0, 200) || 'Failed to save');
+            throw new Error('Failed to save');
         }
-        
-    }, 1200);
+        removeLoadingState(addCourseBtn);
+        showMessage(`${data.message || 'Saved'}! ${getGradeDisplayName(grade)} - ${getSubjectDisplayName(subject)} link saved.`, 'success');
+        clearForm();
+        logActivity('UPSERT_COURSE_RESOURCE', { subject, grade, link: driveLink });
+        if (coursesListContainer.style.display !== 'none') {
+            await fetchAndDisplayCourses();
+        }
+    } catch (e) {
+        removeLoadingState(addCourseBtn);
+        showMessage(e.message, 'error');
+    }
 }
 
-function handleUpdateCourse() {
+async function handleUpdateCourse() {
     const grade = gradeSelect.value;
     const subject = subjectSelect.value;
     const driveLink = googleDriveInput.value.trim();
@@ -195,40 +213,33 @@ function handleUpdateCourse() {
     }
     
     addLoadingState(updateCourseBtn);
-    
-    // Simulate API call
-    setTimeout(() => {
-        const oldCourse = appState.courses[existingCourseIndex];
-        
-        appState.courses[existingCourseIndex] = {
-            ...oldCourse,
-            driveLink: driveLink,
-            dateUpdated: new Date().toISOString(),
-            previousDriveLink: oldCourse.driveLink,
-            updatedBy: appState.currentUser
-        };
-        
-        removeLoadingState(updateCourseBtn);
-        showMessage(`Course updated successfully! ${getGradeDisplayName(grade)} - ${getSubjectDisplayName(subject)} link has been updated.`, 'success');
-        
-        // Clear form
-        clearForm();
-        
-        // Log activity
-        logActivity('UPDATE_COURSE', { 
-            courseId: oldCourse.id,
-            grade: grade,
-            subject: subject,
-            oldLink: oldCourse.driveLink,
-            newLink: driveLink
+    try {
+        const token = ensureAuthenticated();
+        const res = await fetch(`${appState.apiBase}/course-resources`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ subject, grade, link: driveLink })
         });
-        
-        // Update courses display if visible
-        if (coursesListContainer.style.display !== 'none') {
-            displayCourses();
+        const data = await parseJsonSafe(res);
+        if (!res.ok) {
+            if (data && !data.__nonJson && data.message) throw new Error(data.message);
+            if (data && data.__nonJson) throw new Error(data.text?.slice(0, 200) || 'Failed to update');
+            throw new Error('Failed to update');
         }
-        
-    }, 1200);
+        removeLoadingState(updateCourseBtn);
+        showMessage(`${data.message || 'Updated'}! ${getGradeDisplayName(grade)} - ${getSubjectDisplayName(subject)} link updated.`, 'success');
+        clearForm();
+        logActivity('UPSERT_COURSE_RESOURCE', { subject, grade, link: driveLink });
+        if (coursesListContainer.style.display !== 'none') {
+            await fetchAndDisplayCourses();
+        }
+    } catch (e) {
+        removeLoadingState(updateCourseBtn);
+        showMessage(e.message, 'error');
+    }
 }
 
 function handleViewCourses() {
@@ -250,7 +261,7 @@ function handleViewCourses() {
 
 // Display functions
 function displayCourses() {
-    const activeCourses = appState.courses.filter(course => course.status === 'active');
+    const activeCourses = appState.courses.filter(course => course.status !== 'inactive');
     
     if (activeCourses.length === 0) {
         coursesGrid.innerHTML = `
@@ -264,21 +275,39 @@ function displayCourses() {
     }
     
     coursesGrid.innerHTML = activeCourses.map(course => `
-        <div class="course-card" data-course-id="${course.id}">
-            <h3>${getGradeDisplayName(course.grade)} - ${getSubjectDisplayName(course.subject)}</h3>
+        <div class="course-card" data-course-id="${course._id}">
+            <h3>${getGradeDisplayName('grade-' + course.grade)} - ${getSubjectDisplayName(course.subject)}</h3>
             <div class="course-info">
-                <span class="grade">${getGradeDisplayName(course.grade)}</span>
+                <span class="grade">${getGradeDisplayName('grade-' + course.grade)}</span>
                 <span class="subject">${getSubjectDisplayName(course.subject)}</span>
             </div>
-            <a href="${course.driveLink}" target="_blank" class="drive-link">
-                📁 ${course.driveLink.substring(0, 50)}${course.driveLink.length > 50 ? '...' : ''}
+            <a href="${course.link}" target="_blank" class="drive-link">
+                📁 ${course.link.substring(0, 50)}${course.link.length > 50 ? '...' : ''}
             </a>
             <div class="date-added">
-                Added: ${new Date(course.dateAdded).toLocaleDateString()}
-                ${course.dateUpdated ? `| Updated: ${new Date(course.dateUpdated).toLocaleDateString()}` : ''}
+                Updated: ${new Date(course.updated_at || course.created_at).toLocaleDateString()}
             </div>
         </div>
     `).join('');
+}
+
+async function fetchAndDisplayCourses() {
+    try {
+        const token = ensureAuthenticated();
+        const res = await fetch(`${appState.apiBase}/course-resources`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await parseJsonSafe(res);
+        if (!res.ok) {
+            if (data && !data.__nonJson && data.message) throw new Error(data.message);
+            if (data && data.__nonJson) throw new Error(data.text?.slice(0, 200) || 'Failed to fetch');
+            throw new Error('Failed to fetch');
+        }
+        appState.courses = data.resources || [];
+        displayCourses();
+    } catch (e) {
+        showMessage(e.message, 'error');
+    }
 }
 
 // Helper functions
@@ -302,18 +331,12 @@ function getGradeDisplayName(gradeValue) {
 
 function getSubjectDisplayName(subjectValue) {
     const subjectMap = {
-        'mathematics': 'Mathematics',
-        'science': 'Science',
         'english': 'English',
+        'science': 'Science',
+        'buddhism': 'Buddhism',
         'history': 'History',
-        'geography': 'Geography',
-        'physics': 'Physics',
-        'chemistry': 'Chemistry',
-        'biology': 'Biology',
-        'computer-science': 'Computer Science',
-        'art': 'Art',
-        'music': 'Music',
-        'physical-education': 'Physical Education'
+        'sinhala': 'Sinhala',
+        'mathematics': 'Mathematics'
     };
     return subjectMap[subjectValue] || subjectValue;
 }
@@ -346,61 +369,46 @@ function handleSidebarNavigation(event) {
     // Log navigation
     logActivity('NAVIGATE_SIDEBAR', { page, timestamp: new Date().toISOString() });
     
-    showMessage(`Navigated to ${page.charAt(0).toUpperCase() + page.slice(1)} section.`, 'success');
+    // Navigate to actual pages
+    const routes = {
+        dashboard: 'Dashboard.html',
+        students: 'mstudent.html',
+        teachers: 'mteachers.html',
+        courses: 'Mcources.html',
+        timetable: 'mtime.html',
+        settings: 'adminfront.html'
+    };
+    const href = routes[page];
+    if (href) {
+        window.location.href = href;
+    } else {
+        showMessage(`Navigated to ${page.charAt(0).toUpperCase() + page.slice(1)} section.`, 'success');
+    }
 }
 
 function handleHeaderNavigation(event) {
+    const href = event.currentTarget.getAttribute('href');
+    if (href && href !== '#') {
+        // Allow default navigation
+        return;
+    }
     event.preventDefault();
-    
-    const linkText = event.currentTarget.textContent;
-    
-    // Remove active state from all header nav links
-    headerNavLinks.forEach(link => link.classList.remove('active'));
-    
-    // Add active state to clicked link
-    event.currentTarget.classList.add('active');
-    
-    // Log navigation
-    logActivity('NAVIGATE_HEADER', { page: linkText, timestamp: new Date().toISOString() });
-    
-    showMessage(`Navigated to ${linkText} page.`, 'success');
 }
 
 function handleLogout() {
-    const confirmLogout = confirm('Are you sure you want to logout? Any unsaved changes will be lost.');
-    
-    if (confirmLogout) {
-        showMessage('Logging out...', 'success');
-        
-        // Log logout activity
-        logActivity('LOGOUT', { user: appState.currentUser, timestamp: new Date().toISOString() });
-        
-        // Clear application state after a delay
-        setTimeout(() => {
-            appState = {
-                courses: [],
-                currentUser: '',
-                currentPage: 'dashboard',
-                activityLog: [],
-                selectedCourse: null
-            };
-            
-            // Reset form
-            clearForm();
-            
-            // Reset navigation states
-            navLinks.forEach(link => link.classList.remove('active'));
-            headerNavLinks.forEach(link => link.classList.remove('active'));
-            
-            // Hide courses list
-            coursesListContainer.style.display = 'none';
-            viewCoursesBtn.textContent = 'View All Courses';
-            
-            console.log('User logged out successfully');
-            showMessage('You have been logged out successfully! Redirecting to login page...', 'success');
-            
-        }, 1500);
-    }
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (!confirmLogout) return;
+    showMessage('Logging out...', 'info');
+    // Log activity
+    logActivity('LOGOUT', { user: appState.currentUser, timestamp: new Date().toISOString() });
+    // Clear auth token
+    localStorage.removeItem('adminToken');
+    // Optional: clear legacy key
+    localStorage.removeItem('token');
+    // Redirect to login
+    setTimeout(() => {
+        window.location.href = 'adminlogin.html';
+    }, 500);
 }
 
 // Form validation and input handlers
@@ -614,6 +622,8 @@ function initializeApp() {
         page: appState.currentPage,
         timestamp: new Date().toISOString()
     });
+    // Initial fetch
+    fetchAndDisplayCourses();
 }
 
 // Error handling
@@ -677,6 +687,8 @@ function setupEventListeners() {
 // DOM ready event
 document.addEventListener('DOMContentLoaded', function() {
     try {
+        // Auth guard
+        try { ensureAuthenticated(); } catch (_) { return; }
         setupEventListeners();
         initializeApp();
     } catch (error) {

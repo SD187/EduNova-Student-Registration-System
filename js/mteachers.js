@@ -1,6 +1,20 @@
-// Teachers data storage (in-memory)
+// Teachers data storage
 let teachers = [];
-let editingIndex = -1;
+let editingTeacherId = null;
+
+// API Base URL (match current origin to avoid localhost/127.0.0.1 mismatch)
+const API_BASE_URL = `${window.location.origin}/api`;
+
+// Get JWT token from localStorage
+function getAuthToken() {
+    return localStorage.getItem('adminToken');
+}
+
+// Check if user is authenticated
+function isAuthenticated() {
+    const token = getAuthToken();
+    return token && token !== 'null';
+}
 
 // DOM elements
 const teacherForm = {
@@ -12,8 +26,17 @@ const teacherForm = {
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication
+    if (!isAuthenticated()) {
+        showNotification('Please login to access this page', 'error');
+        setTimeout(() => {
+            window.location.href = 'adminlogin.html';
+        }, 2000);
+        return;
+    }
+    
     initializeForm();
-    renderTeachersTable();
+    loadTeachers();
     setupEventListeners();
 });
 
@@ -23,6 +46,31 @@ function initializeForm() {
     teacherForm.subject = document.getElementById('teacherSubject');
     teacherForm.contact = document.getElementById('contactNo');
     teacherForm.email = document.getElementById('email');
+}
+
+// Load teachers from API
+async function loadTeachers() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/teachers`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            teachers = data.teachers || [];
+            renderTeachersTable();
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.message || 'Failed to load teachers', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading teachers:', error);
+        showNotification('Failed to load teachers. Please check your connection.', 'error');
+    }
 }
 
 // Setup event listeners
@@ -40,12 +88,32 @@ function setupEventListeners() {
         btn.addEventListener('click', handleLogout);
     });
 
-    // Navigation active state
+    // Navigation active state and functionality
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', function(e) {
+            // Remove active class from all nav items
             navItems.forEach(nav => nav.classList.remove('active'));
+            // Add active class to clicked item
             this.classList.add('active');
+            
+            // Get the href from the clicked nav item
+            const href = this.getAttribute('href');
+            if (href && href !== '#' && href !== 'mteachers.html') {
+                // Navigate to the page
+                window.location.href = href;
+            }
+        });
+    });
+    
+    // Header navigation functionality
+    const headerNavLinks = document.querySelectorAll('.header-nav .nav-link');
+    headerNavLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href && href !== '#') {
+                window.location.href = href;
+            }
         });
     });
 }
@@ -83,7 +151,7 @@ function updateInputValidation(input, isValid) {
 }
 
 // Add or update teacher
-function addTeacher() {
+async function addTeacher() {
     if (!validateForm()) {
         showNotification('Please fill all fields correctly', 'error');
         return;
@@ -93,37 +161,45 @@ function addTeacher() {
         name: teacherForm.name.value.trim(),
         subject: teacherForm.subject.value,
         contact: teacherForm.contact.value.trim(),
-        email: teacherForm.email.value.trim(),
-        id: editingIndex === -1 ? Date.now() : teachers[editingIndex].id
+        email: teacherForm.email.value.trim()
     };
 
-    // Check for duplicate email
-    const existingTeacher = teachers.find((teacher, index) => 
-        teacher.email === teacherData.email && index !== editingIndex
-    );
-
-    if (existingTeacher) {
-        showNotification('A teacher with this email already exists', 'error');
-        return;
-    }
-
-    if (editingIndex === -1) {
-        // Add new teacher
-        teachers.push(teacherData);
-        showNotification('Teacher added successfully', 'success');
-    } else {
-        // Update existing teacher
-        teachers[editingIndex] = teacherData;
-        showNotification('Teacher updated successfully', 'success');
-        editingIndex = -1;
+    try {
+        const url = editingTeacherId 
+            ? `${API_BASE_URL}/teachers/${editingTeacherId}`
+            : `${API_BASE_URL}/teachers`;
         
-        // Reset button text
-        const addBtn = document.querySelector('.btn-primary');
-        addBtn.textContent = 'Add Teacher';
-    }
+        const method = editingTeacherId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(teacherData)
+        });
 
-    clearForm();
-    renderTeachersTable();
+        if (response.ok) {
+            const data = await response.json();
+            showNotification(data.message, 'success');
+            clearForm();
+            editingTeacherId = null;
+            
+            // Reset button text
+            const addBtn = document.querySelector('.btn-primary');
+            addBtn.textContent = 'Add Teacher';
+            
+            // Reload teachers
+            await loadTeachers();
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.message || 'Failed to save teacher', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving teacher:', error);
+        showNotification('Failed to save teacher. Please check your connection.', 'error');
+    }
 }
 
 // Clear form inputs
@@ -134,6 +210,15 @@ function clearForm() {
             input.style.borderColor = '#e5e7eb';
         }
     });
+    
+    // Reset editing state
+    editingTeacherId = null;
+    
+    // Reset button text
+    const addBtn = document.querySelector('.btn-primary');
+    if (addBtn) {
+        addBtn.textContent = 'Add Teacher';
+    }
 }
 
 // Render teachers table
@@ -153,7 +238,7 @@ function renderTeachersTable() {
         return;
     }
 
-    tbody.innerHTML = teachers.map((teacher, index) => `
+    tbody.innerHTML = teachers.map((teacher) => `
         <tr>
             <td>${escapeHtml(teacher.name)}</td>
             <td>${escapeHtml(teacher.subject)}</td>
@@ -161,10 +246,10 @@ function renderTeachersTable() {
             <td>${escapeHtml(teacher.email)}</td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn btn-secondary btn-small" onclick="editTeacher(${index})">
+                    <button class="btn btn-secondary btn-small" onclick="editTeacher('${teacher._id}')">
                         Edit
                     </button>
-                    <button class="btn btn-danger btn-small" onclick="deleteTeacher(${index})">
+                    <button class="btn btn-danger btn-small" onclick="deleteTeacher('${teacher._id}')">
                         Delete
                     </button>
                 </div>
@@ -174,15 +259,20 @@ function renderTeachersTable() {
 }
 
 // Edit teacher
-function editTeacher(index) {
-    const teacher = teachers[index];
+function editTeacher(teacherId) {
+    const teacher = teachers.find(t => t._id === teacherId);
+    
+    if (!teacher) {
+        showNotification('Teacher not found', 'error');
+        return;
+    }
     
     teacherForm.name.value = teacher.name;
     teacherForm.subject.value = teacher.subject;
     teacherForm.contact.value = teacher.contact;
     teacherForm.email.value = teacher.email;
     
-    editingIndex = index;
+    editingTeacherId = teacherId;
     
     // Update button text
     const addBtn = document.querySelector('.btn-primary');
@@ -195,20 +285,45 @@ function editTeacher(index) {
 }
 
 // Delete teacher
-function deleteTeacher(index) {
-    const teacher = teachers[index];
+async function deleteTeacher(teacherId) {
+    const teacher = teachers.find(t => t._id === teacherId);
+    
+    if (!teacher) {
+        showNotification('Teacher not found', 'error');
+        return;
+    }
     
     if (confirm(`Are you sure you want to delete ${teacher.name}?`)) {
-        teachers.splice(index, 1);
-        renderTeachersTable();
-        showNotification('Teacher deleted successfully', 'success');
-        
-        // Reset form if we were editing this teacher
-        if (editingIndex === index) {
-            clearForm();
-            editingIndex = -1;
-            const addBtn = document.querySelector('.btn-primary');
-            addBtn.textContent = 'Add Teacher';
+        try {
+            const response = await fetch(`${API_BASE_URL}/teachers/${teacherId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                showNotification(data.message, 'success');
+                
+                // Reset form if we were editing this teacher
+                if (editingTeacherId === teacherId) {
+                    clearForm();
+                    editingTeacherId = null;
+                    const addBtn = document.querySelector('.btn-primary');
+                    addBtn.textContent = 'Add Teacher';
+                }
+                
+                // Reload teachers
+                await loadTeachers();
+            } else {
+                const errorData = await response.json();
+                showNotification(errorData.message || 'Failed to delete teacher', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting teacher:', error);
+            showNotification('Failed to delete teacher. Please check your connection.', 'error');
         }
     }
 }
@@ -274,9 +389,12 @@ function showNotification(message, type = 'info') {
 function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
         showNotification('Logging out...', 'info');
+        
+        // Clear authentication token
+        localStorage.removeItem('adminToken');
+        
         setTimeout(() => {
-            // In a real application, this would redirect to login page
-            window.location.href = 'login.html';
+            window.location.href = 'adminlogin.html';
         }, 1000);
     }
 }

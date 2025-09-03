@@ -105,18 +105,132 @@ function loadPageContent(page) {
     }
 }
 
-// Load dashboard data
-function loadDashboardData() {
-    // Simulate loading data
-    const stats = {
-        students: 500,
-        admins: 1,
-        courses: 6,
-        lastLogin: '2 hours ago'
-    };
+// Load dashboard data from backend API
+async function loadDashboardData() {
+    try {
+        console.log('Loading dashboard data from backend...');
+        
+        // Get authentication token
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        
+        if (!token) {
+            console.error('No authentication token found');
+            showNotification('Please login to access dashboard', 'error');
+            return;
+        }
+        
+        // Fetch dashboard statistics
+        const statsResponse = await fetch('http://127.0.0.1:5000/api/dashboard/stats', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (statsResponse.ok) {
+            const statsData = await statsResponse.json();
+            updateStatCards(statsData.stats);
+        } else {
+            console.error('Failed to load dashboard stats');
+            // Use fallback data
+            const fallbackStats = {
+                total_students: 0,
+                total_courses: 0,
+                total_admins: 1,
+                recent_registrations: 0,
+                pending_registrations: 0,
+                completion_rate: 0,
+                avg_rating: 4.8,
+                last_login: 'Never'
+            };
+            updateStatCards(fallbackStats);
+        }
+        
+        // Fetch activity data
+        const activityResponse = await fetch('http://127.0.0.1:5000/api/dashboard/activity', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (activityResponse.ok) {
+            const activityData = await activityResponse.json();
+            updateActivityData(activityData.activity);
+        } else {
+            console.error('Failed to load activity data');
+        }
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showNotification('Failed to load dashboard data', 'error');
+        
+        // Use fallback data
+        const fallbackStats = {
+            total_students: 0,
+            total_courses: 0,
+            total_admins: 1,
+            recent_registrations: 0,
+            pending_registrations: 0,
+            completion_rate: 0,
+            avg_rating: 4.8,
+            last_login: 'Never'
+        };
+        updateStatCards(fallbackStats);
+    }
+}
+
+// Update stat cards with real data from backend
+function updateStatCards(stats) {
+    // Update total students
+    const studentsCard = document.querySelector('.stat-card:nth-child(1) .stat-info p');
+    if (studentsCard) {
+        studentsCard.textContent = stats.total_students + ' +';
+    }
     
-    // Update activity stats with animation
+    // Update active admins
+    const adminsCard = document.querySelector('.stat-card:nth-child(2) .stat-info p');
+    if (adminsCard) {
+        adminsCard.textContent = stats.total_admins;
+    }
+    
+    // Update total courses
+    const coursesCard = document.querySelector('.stat-card:nth-child(3) .stat-info p');
+    if (coursesCard) {
+        coursesCard.textContent = stats.total_courses + ' +';
+    }
+    
+    // Update last login
+    const lastLoginCard = document.querySelector('.stat-card:nth-child(4) .stat-info p');
+    if (lastLoginCard) {
+        lastLoginCard.textContent = stats.last_login;
+    }
+    
+    // Update activity stats
+    const activityStats = document.querySelectorAll('.activity-stat .stat-number');
+    if (activityStats.length >= 3) {
+        activityStats[0].textContent = stats.recent_registrations;
+        activityStats[1].textContent = stats.completion_rate + '%';
+        activityStats[2].textContent = stats.avg_rating;
+    }
+    
+    // Animate the numbers
     animateNumbers();
+}
+
+// Update activity data
+function updateActivityData(activity) {
+    console.log('Updating activity data:', activity);
+    
+    // Update chart with real data
+    if (activity.chart_data) {
+        updateChart(activity.chart_data);
+    }
+    
+    // You can also update recent activities list if needed
+    if (activity.recent_students) {
+        console.log('Recent students:', activity.recent_students);
+    }
 }
 
 // Animate numbers on page load
@@ -157,6 +271,21 @@ function createChart() {
     const canvas = document.getElementById('activityChart');
     if (!canvas) return;
     
+    // Default chart data
+    const defaultData = {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        enrollments: [45, 52, 38, 67],
+        completions: [42, 48, 35, 62]
+    };
+    
+    updateChart(defaultData);
+}
+
+// Update chart with real data
+function updateChart(chartData) {
+    const canvas = document.getElementById('activityChart');
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
@@ -164,9 +293,9 @@ function createChart() {
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
     
-    // Chart data
-    const data = [30, 45, 35, 50, 65, 55, 70, 60, 75, 80, 70, 85];
-    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    // Use enrollment data for the chart
+    const data = chartData.enrollments || [30, 45, 35, 50, 65, 55, 70, 60, 75, 80, 70, 85];
+    const labels = chartData.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
     // Chart styling
     const barWidth = width / data.length - 10;
@@ -253,21 +382,93 @@ function updateStats() {
     }
 }
 
-// Quick action functions
-function manageCourses() {
-    showNotification('Redirecting to Course Management...', 'success');
-    setTimeout(() => {
-        // Redirect to courses page
-        window.location.href = 'manageCourses.html';
-    }, 1500);
+// Quick action functions with backend integration
+async function manageCourses() {
+    try {
+        showNotification('Opening Course Management...', 'info');
+        
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        
+        if (!token) {
+            showNotification('Please login to access course management', 'error');
+            return;
+        }
+        
+        // Call backend quick action API
+        const response = await fetch('http://127.0.0.1:5000/api/dashboard/quick-actions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ action: 'manage_courses' })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification(data.message, 'success');
+            
+            // Redirect to course management page
+            setTimeout(() => {
+                window.location.href = 'mcources.html';
+            }, 1000);
+        } else {
+            showNotification('Failed to open course management', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error opening course management:', error);
+        showNotification('Error opening course management', 'error');
+        
+        // Fallback redirect
+        setTimeout(() => {
+            window.location.href = 'mcources.html';
+        }, 1000);
+    }
 }
 
-function manageStudents() {
-    showNotification('Redirecting to Student Management...', 'success');
-    setTimeout(() => {
-        // Redirect to students page
-        window.location.href = 'manageStudents.html';
-    }, 1500);
+async function manageStudents() {
+    try {
+        showNotification('Opening Student Management...', 'info');
+        
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        
+        if (!token) {
+            showNotification('Please login to access student management', 'error');
+            return;
+        }
+        
+        // Call backend quick action API
+        const response = await fetch('http://127.0.0.1:5000/api/dashboard/quick-actions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ action: 'manage_students' })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification(data.message, 'success');
+            
+            // Redirect to student management page
+            setTimeout(() => {
+                window.location.href = 'mstudent.html';
+            }, 1000);
+        } else {
+            showNotification('Failed to open student management', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error opening student management:', error);
+        showNotification('Error opening student management', 'error');
+        
+        // Fallback redirect
+        setTimeout(() => {
+            window.location.href = 'mstudent.html';
+        }, 1000);
+    }
 }
 
 // Logout function

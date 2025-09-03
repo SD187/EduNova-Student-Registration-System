@@ -186,28 +186,8 @@ function handleFormSubmission() {
         submitButton.classList.add('loading');
         submitButton.disabled = true;
         
-        // Simulate account creation (replace with actual API call)
-        setTimeout(() => {
-          console.log('Creating admin account:', {
-            username: formData.username,
-            // Don't log the security key for security reasons
-            securityKeyVerified: true,
-            passwordLength: formData.password.length
-          });
-          
-          // Remove loading state
-          submitButton.classList.remove('loading');
-          submitButton.disabled = false;
-          
-          // Clear the security key from memory after successful creation
-          document.getElementById('securityKey').value = '';
-          
-          // Show success message
-          alert('Admin account created successfully! Redirecting to login page...');
-          
-          // Redirect to login page
-          window.location.href = 'adminLogin.html';
-        }, 2000);
+        // Create admin account using Flask backend API
+        createAdminAccount(formData);
       } else {
         // Scroll to first error
         const firstError = document.querySelector('.input-group.error');
@@ -223,9 +203,79 @@ function handleFormSubmission() {
   }
 }
 
+// Create admin account using Flask backend API
+async function createAdminAccount(formData) {
+  try {
+    const accountData = {
+      username: formData.username,
+      password: formData.password,
+      full_name: formData.username,
+      security_key: formData.securityKey,
+      role: 'admin'
+    };
+
+    console.log('Creating admin account:', {
+      username: accountData.username,
+      full_name: accountData.full_name,
+      role: accountData.role,
+      security_key_provided: !!accountData.security_key
+    });
+
+    const response = await fetch('http://localhost:5000/api/admin/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(accountData)
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Remove loading state
+      const submitButton = document.querySelector('.register-btn');
+      submitButton.classList.remove('loading');
+      submitButton.disabled = false;
+      
+      // Clear the security key from memory after successful creation
+      document.getElementById('securityKey').value = '';
+      
+      // Show success message
+      alert('Admin account created successfully! Redirecting to login page...');
+      
+      // Redirect to login page
+      window.location.href = 'adminlogin.html';
+    } else {
+      // Remove loading state
+      const submitButton = document.querySelector('.register-btn');
+      submitButton.classList.remove('loading');
+      submitButton.disabled = false;
+      
+      // Show error message
+      alert(data.message || 'Failed to create admin account');
+      
+      // Clear security key on error for security
+      document.getElementById('securityKey').value = '';
+    }
+  } catch (error) {
+    console.error('Error creating admin account:', error);
+    
+    // Remove loading state
+    const submitButton = document.querySelector('.register-btn');
+    submitButton.classList.remove('loading');
+    submitButton.disabled = false;
+    
+    // Show error message
+    alert('Connection error. Make sure the backend server is running.');
+    
+    // Clear security key on error for security
+    document.getElementById('securityKey').value = '';
+  }
+}
+
 // Sign in redirect function
 function signIn() {
-  window.location.href = 'adminLogin.html';
+  window.location.href = 'adminlogin.html';
 }
 
 // Initialize when DOM is loaded

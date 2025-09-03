@@ -66,6 +66,15 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const slugify = (str) => str.toString().toLowerCase().trim().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  // Map display subjects to admin values
+  const subjectMap = {
+    'english': 'english',
+    'science': 'science',
+    'buddhism': 'buddhism',
+    'history': 'history',
+    'sinhala': 'sinhala',
+    'mathematics': 'mathematics'
+  };
 
   // Subject click → go to Grade panel
   subjectCards.forEach(card => {
@@ -122,9 +131,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!chosenSubject || !chosenGrade) return;
 
       const type = card.getAttribute('data-type'); // pastpapers | modelpapers | studyresources
-      const subjectSlug = slugify(chosenSubject);
-      const url = `materials.html?subject=${encodeURIComponent(subjectSlug)}&grade=${encodeURIComponent(chosenGrade)}&type=${encodeURIComponent(type)}`;
-      window.location.href = url;
+      const subjectSlug = subjectMap[slugify(chosenSubject)] || slugify(chosenSubject);
+      // Resolve via public API and open in new tab
+      const apiBase = `${window.location.origin}/api`;
+      fetch(`${apiBase}/public/course-resource?subject=${encodeURIComponent(subjectSlug)}&grade=${encodeURIComponent(chosenGrade)}`)
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok || !data.link) {
+            alert(data.message || 'No resource configured for this selection yet.');
+            return;
+          }
+          window.open(data.link, '_blank');
+        })
+        .catch(() => alert('Failed to load resource. Please try again later.'));
     });
   });
 });

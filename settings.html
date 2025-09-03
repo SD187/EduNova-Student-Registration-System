@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings - EduNova</title>
+    <link rel="stylesheet" href="css/settings.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script defer src="js/settings.js"></script>
+    <script>
+        if (!localStorage.getItem('adminToken')) {
+            window.location.href = 'adminlogin.html';
+        }
+    </script>
+    </head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo-section">
+                <img src="assets/logo.jpeg" class="logo" alt="EduNova Logo">
+                <h2 class="brand-name">EduNova Admin</h2>
+            </div>
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="Dashboard.html" class="nav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+                    <li><a href="mstudent.html" class="nav-item"><i class="fas fa-user-graduate"></i><span>Manage Students</span></a></li>
+                    <li><a href="mteachers.html" class="nav-item"><i class="fas fa-chalkboard-teacher"></i><span>Manage Teachers</span></a></li>
+                    <li><a href="Mcources.html" class="nav-item"><i class="fas fa-book"></i><span>Manage Courses</span></a></li>
+                    <li><a href="mtime.html" class="nav-item"><i class="fas fa-clock"></i><span>Manage Time Table</span></a></li>
+                    <li><a href="settings.html" class="nav-item current"><i class="fas fa-cog"></i><span>Settings</span></a></li>
+                </ul>
+            </nav>
+            <div class="logout-section">
+                <button class="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="about.html" class="nav-link">About Us</a>
+                    <a href="courses.html" class="nav-link">Courses</a>
+                    <a href="timetable.html" class="nav-link">Time Table</a>
+                    <a href="Contact.html" class="nav-link">Contact</a>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <h1 class="page-title">Settings</h1>
+
+                <section class="card-grid">
+                    <div class="card">
+                        <h2>Profile</h2>
+                        <div class="form">
+                            <div class="row">
+                                <div class="col">
+                                    <label>Full Name</label>
+                                    <input id="profileFullName" type="text" placeholder="Enter full name">
+                                </div>
+                                <div class="col">
+                                    <label>Email</label>
+                                    <input id="profileEmail" type="email" placeholder="Enter email">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label>Username</label>
+                                    <input id="profileUsername" type="text" placeholder="Enter username" disabled>
+                                </div>
+                                <div class="col">
+                                    <label>Role</label>
+                                    <input id="profileRole" type="text" placeholder="Role" disabled>
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button id="saveProfileBtn" class="btn primary"><i class="fas fa-save"></i> Save Profile</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Change Password</h2>
+                        <div class="form">
+                            <div class="row">
+                                <div class="col">
+                                    <label>Current Password</label>
+                                    <input id="currentPassword" type="password" placeholder="Current password">
+                                </div>
+                                <div class="col">
+                                    <label>New Password</label>
+                                    <input id="newPassword" type="password" placeholder="New password">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label>Confirm New Password</label>
+                                    <input id="confirmPassword" type="password" placeholder="Confirm new password">
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button id="changePasswordBtn" class="btn danger"><i class="fas fa-key"></i> Change Password</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Application Settings</h2>
+                        <div class="form">
+                            <div class="row">
+                                <div class="col">
+                                    <label>Site Name</label>
+                                    <input id="appSiteName" type="text" placeholder="EduNova">
+                                </div>
+                                <div class="col">
+                                    <label>Logo URL</label>
+                                    <input id="appLogoUrl" type="url" placeholder="https://.../logo.png">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label>Allowed Origins (comma-separated)</label>
+                                    <input id="appCorsOrigins" type="text" placeholder="http://127.0.0.1:5000">
+                                </div>
+                                <div class="col">
+                                    <label>Enable Registrations</label>
+                                    <select id="appEnableRegistrations">
+                                        <option value="true">Enabled</option>
+                                        <option value="false">Disabled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button id="saveAppSettingsBtn" class="btn primary"><i class="fas fa-save"></i> Save App Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
+

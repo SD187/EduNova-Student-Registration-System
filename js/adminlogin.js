@@ -23,8 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response.ok) {
         alert('Login successful!');
-        localStorage.setItem('token', data.token); // Save token
-        window.location.href = 'dashboard.html'; // Redirect
+        // Store token under the key used by protected pages
+        localStorage.setItem('adminToken', data.token);
+        // Keep backward compatibility just in case
+        localStorage.setItem('token', data.token);
+        window.location.href = 'Dashboard.html'; // Redirect (correct file name)
       } else {
         alert(data.message || 'Login failed');
       }

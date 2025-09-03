@@ -12,9 +12,12 @@ from bson import ObjectId
 # Load environment variables
 load_dotenv()
 
+# Import configuration
+from config import Config
+
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')
+app.config['SECRET_KEY'] = Config.SECRET_KEY
 
 # Enable CORS
 CORS(app)
@@ -23,14 +26,17 @@ CORS(app)
 FRONTEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # MongoDB connection
-MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/procr_database')
-client = MongoClient(MONGODB_URI)
-db = client.procr_database
+client = MongoClient(Config.MONGODB_URI)
+db = client[Config.DATABASE_NAME]
 
 # Collections
 students_collection = db.students
 admins_collection = db.admins
 courses_collection = db.courses
+teachers_collection = db.teachers
+registration_links_collection = db.registration_links
+course_resources_collection = db.course_resources
+timetable_collection = db.timetable_entries
 
 # JWT token required decorator
 def token_required(f):
@@ -118,16 +124,23 @@ def register_admin():
         data = request.get_json()
         
         # Validate required fields
-        required_fields = ['username', 'email', 'password', 'full_name']
+        required_fields = ['username', 'password', 'full_name', 'security_key']
         for field in required_fields:
             if field not in data:
                 return jsonify({'message': f'{field} is required'}), 400
+        
+        # Validate security key
+        if data['security_key'] != Config.ADMIN_SECURITY_KEY:
+            return jsonify({'message': 'Invalid security key. Access denied.'}), 403
+        
+        # Generate email from username if not provided
+        email = data.get('email', f"{data['username']}@edunova.com")
         
         # Check if admin already exists
         existing_admin = admins_collection.find_one({
             '$or': [
                 {'username': data['username']},
-                {'email': data['email']}
+                {'email': email}
             ]
         })
         
@@ -138,10 +151,11 @@ def register_admin():
         hashed_password = generate_password_hash(data['password'])
         admin_data = {
             'username': data['username'],
-            'email': data['email'],
+            'email': email,
             'password': hashed_password,
             'full_name': data['full_name'],
             'role': data.get('role', 'admin'),
+            'security_key_used': data['security_key'],  # Store the security key used
             'created_at': datetime.utcnow(),
             'is_active': True
         }
@@ -159,9 +173,7 @@ def register_admin():
 @app.route('/api/admin/login', methods=['POST'])
 def login_admin():
     try:
-        print(f"Login endpoint called - Method: {request.method}")
         data = request.get_json()
-        print(f"Received data: {data}")
         
         if not data.get('username') or not data.get('password'):
             return jsonify({'message': 'Username and password required'}), 400
@@ -195,7 +207,6 @@ def login_admin():
         }), 200
         
     except Exception as e:
-        print(f"Login error: {str(e)}")
         return jsonify({'message': f'Error: {str(e)}'}), 500
 
 # Student Management Routes
@@ -399,21 +410,638 @@ def create_course(current_admin):
     except Exception as e:
         return jsonify({'message': f'Error: {str(e)}'}), 500
 
+@app.route('/api/courses/<course_id>', methods=['GET'])
+@token_required
+def get_course(current_admin, course_id):
+    try:
+        course = courses_collection.find_one({'_id': ObjectId(course_id)})
+        
+        if not course:
+            return jsonify({'message': 'Course not found'}), 404
+        
+        course['_id'] = str(course['_id'])
+        return jsonify({'course': course}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/courses/<course_id>', methods=['PUT'])
+@token_required
+def update_course(current_admin, course_id):
+    try:
+        data = request.get_json()
+        
+        # Remove fields that shouldn't be updated
+        data.pop('_id', None)
+        data.pop('created_at', None)
+        data.pop('created_by', None)
+        
+        # Add update timestamp
+        data['updated_at'] = datetime.utcnow()
+        data['updated_by'] = str(current_admin['_id'])
+        
+        result = courses_collection.update_one(
+            {'_id': ObjectId(course_id)},
+            {'$set': data}
+        )
+        
+        if result.matched_count == 0:
+            return jsonify({'message': 'Course not found'}), 404
+        
+        return jsonify({'message': 'Course updated successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/courses/<course_id>', methods=['DELETE'])
+@token_required
+def delete_course(current_admin, course_id):
+    try:
+        result = courses_collection.delete_one({'_id': ObjectId(course_id)})
+        
+        if result.deleted_count == 0:
+            return jsonify({'message': 'Course not found'}), 404
+        
+        return jsonify({'message': 'Course deleted successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Teacher Management Routes
+@app.route('/api/teachers', methods=['GET'])
+@token_required
+def get_teachers(current_admin):
+    try:
+        teachers = list(teachers_collection.find().sort('name', 1))
+        
+        for teacher in teachers:
+            teacher['_id'] = str(teacher['_id'])
+        
+        return jsonify({'teachers': teachers}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/teachers', methods=['POST'])
+@token_required
+def create_teacher(current_admin):
+    try:
+        data = request.get_json()
+        
+        required_fields = ['name', 'subject', 'contact', 'email']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'message': f'{field} is required'}), 400
+        
+        # Check if teacher with same email already exists
+        existing_teacher = teachers_collection.find_one({'email': data['email']})
+        if existing_teacher:
+            return jsonify({'message': 'Teacher with this email already exists'}), 400
+        
+        teacher_data = {
+            'name': data['name'],
+            'subject': data['subject'],
+            'contact': data['contact'],
+            'email': data['email'],
+            'status': data.get('status', 'active'),
+            'created_at': datetime.utcnow(),
+            'created_by': str(current_admin['_id'])
+        }
+        
+        result = teachers_collection.insert_one(teacher_data)
+        
+        return jsonify({
+            'message': 'Teacher created successfully',
+            'teacher_id': str(result.inserted_id)
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/teachers/<teacher_id>', methods=['GET'])
+@token_required
+def get_teacher(current_admin, teacher_id):
+    try:
+        teacher = teachers_collection.find_one({'_id': ObjectId(teacher_id)})
+        
+        if not teacher:
+            return jsonify({'message': 'Teacher not found'}), 404
+        
+        teacher['_id'] = str(teacher['_id'])
+        return jsonify({'teacher': teacher}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/teachers/<teacher_id>', methods=['PUT'])
+@token_required
+def update_teacher(current_admin, teacher_id):
+    try:
+        data = request.get_json()
+        
+        # Remove fields that shouldn't be updated
+        data.pop('_id', None)
+        data.pop('created_at', None)
+        data.pop('created_by', None)
+        
+        # Add update timestamp
+        data['updated_at'] = datetime.utcnow()
+        data['updated_by'] = str(current_admin['_id'])
+        
+        result = teachers_collection.update_one(
+            {'_id': ObjectId(teacher_id)},
+            {'$set': data}
+        )
+        
+        if result.matched_count == 0:
+            return jsonify({'message': 'Teacher not found'}), 404
+        
+        return jsonify({'message': 'Teacher updated successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/teachers/<teacher_id>', methods=['DELETE'])
+@token_required
+def delete_teacher(current_admin, teacher_id):
+    try:
+        result = teachers_collection.delete_one({'_id': ObjectId(teacher_id)})
+        
+        if result.deleted_count == 0:
+            return jsonify({'message': 'Teacher not found'}), 404
+        
+        return jsonify({'message': 'Teacher deleted successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
 # Dashboard Statistics
 @app.route('/api/dashboard/stats', methods=['GET'])
 @token_required
 def get_dashboard_stats(current_admin):
     try:
+        # Get real-time statistics from MongoDB
+        total_students = students_collection.count_documents({'status': 'active'})
+        total_courses = courses_collection.count_documents({'status': 'active'})
+        total_teachers = teachers_collection.count_documents({'status': 'active'})
+        total_admins = admins_collection.count_documents({'is_active': True})
+        
+        # Get recent activity (last 7 days)
+        recent_students = students_collection.count_documents({
+            'created_at': {'$gte': datetime.utcnow() - timedelta(days=7)}
+        })
+        
+        # Get pending registrations
+        pending_registrations = students_collection.count_documents({'status': 'pending'})
+        
+        # Calculate completion rate (example calculation)
+        total_enrolled = students_collection.count_documents({'status': 'active'})
+        completed_students = students_collection.count_documents({'status': 'completed'})
+        completion_rate = round((completed_students / max(total_enrolled, 1)) * 100, 1)
+        
         stats = {
-            'total_students': students_collection.count_documents({'status': 'active'}),
-            'total_courses': courses_collection.count_documents({'status': 'active'}),
-            'pending_registrations': students_collection.count_documents({'status': 'pending'}),
-            'recent_registrations': students_collection.count_documents({
-                'created_at': {'$gte': datetime.utcnow() - timedelta(days=7)}
-            })
+            'total_students': total_students,
+            'total_courses': total_courses,
+            'total_teachers': total_teachers,
+            'total_admins': total_admins,
+            'recent_registrations': recent_students,
+            'pending_registrations': pending_registrations,
+            'completion_rate': completion_rate,
+            'avg_rating': 4.8,  # This could be calculated from student feedback
+            'last_login': current_admin.get('last_login', 'Never')
         }
         
         return jsonify({'stats': stats}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Dashboard Activity Data
+@app.route('/api/dashboard/activity', methods=['GET'])
+@token_required
+def get_dashboard_activity(current_admin):
+    try:
+        # Get recent student registrations for activity chart
+        recent_students = list(students_collection.find({
+            'created_at': {'$gte': datetime.utcnow() - timedelta(days=30)}
+        }).sort('created_at', -1).limit(10))
+        
+        # Get recent course activities
+        recent_courses = list(courses_collection.find({
+            'created_at': {'$gte': datetime.utcnow() - timedelta(days=30)}
+        }).sort('created_at', -1).limit(5))
+        
+        # Format the data for frontend
+        activity_data = {
+            'recent_students': [
+                {
+                    'id': str(student['_id']),
+                    'name': student['full_name'],
+                    'course': student['course'],
+                    'date': student['created_at'].isoformat(),
+                    'status': student['status']
+                } for student in recent_students
+            ],
+            'recent_courses': [
+                {
+                    'id': str(course['_id']),
+                    'name': course['name'],
+                    'code': course['code'],
+                    'date': course['created_at'].isoformat(),
+                    'status': course['status']
+                } for course in recent_courses
+            ],
+            'chart_data': {
+                'labels': ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                'enrollments': [45, 52, 38, 67],
+                'completions': [42, 48, 35, 62]
+            }
+        }
+        
+        return jsonify({'activity': activity_data}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Course Resources (subject+grade -> one link used for past/model/study)
+@app.route('/api/course-resources', methods=['GET'])
+@token_required
+def list_course_resources(current_admin):
+    try:
+        # Optional filters: subject, grade
+        subject = request.args.get('subject')
+        grade = request.args.get('grade')
+        query = {}
+        if subject:
+            query['subject'] = subject
+        if grade:
+            query['grade'] = grade
+        docs = list(course_resources_collection.find(query).sort('subject', 1))
+        for d in docs:
+            d['_id'] = str(d['_id'])
+        return jsonify({'resources': docs}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/course-resources', methods=['POST'])
+@token_required
+def upsert_course_resource(current_admin):
+    try:
+        data = request.get_json()
+        # Expect subject (slug/lower), grade (e.g., '6' or 'grade-6'), and link (OneDrive/Drive)
+        for f in ['subject', 'grade', 'link']:
+            if not data.get(f):
+                return jsonify({'message': f'{f} is required'}), 400
+        # Normalize grade: accept 'grade-6' or '6' -> store as '6'
+        grade = str(data['grade']).replace('grade-', '')
+        subject = str(data['subject']).strip().lower()
+        link = data['link'].strip()
+        now = datetime.utcnow()
+        result = course_resources_collection.update_one(
+            {'subject': subject, 'grade': grade},
+            {'$set': {
+                'subject': subject,
+                'grade': grade,
+                'link': link,
+                'updated_at': now,
+                'updated_by': str(current_admin['_id'])
+            }, '$setOnInsert': {
+                'created_at': now,
+                'created_by': str(current_admin['_id'])
+            }},
+            upsert=True
+        )
+        # Determine id
+        if result.upserted_id:
+            res_id = str(result.upserted_id)
+            msg = 'Resource created'
+        else:
+            # fetch id
+            doc = course_resources_collection.find_one({'subject': subject, 'grade': grade})
+            res_id = str(doc['_id']) if doc else None
+            msg = 'Resource updated'
+        return jsonify({'message': msg, 'id': res_id}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Public resolver (no auth): given subject + grade + type -> redirect/open stored link
+@app.route('/api/public/course-resource', methods=['GET'])
+def public_course_resource():
+    try:
+        subject = request.args.get('subject', '').strip().lower()
+        grade = request.args.get('grade', '').replace('grade-', '')
+        if not subject or not grade:
+            return jsonify({'message': 'subject and grade are required'}), 400
+        doc = course_resources_collection.find_one({'subject': subject, 'grade': grade})
+        if not doc:
+            return jsonify({'message': 'No resource configured for this subject and grade'}), 404
+        return jsonify({'link': doc.get('link')}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Timetable Endpoints
+# Public: list timetable entries with optional filters
+@app.route('/api/timetable', methods=['GET'])
+def get_timetable():
+    try:
+        subject = request.args.get('subject')
+        grade = request.args.get('grade')
+        date = request.args.get('date')
+        query = {}
+        if subject:
+            query['subject'] = subject.strip().lower()
+        if grade:
+            query['grade'] = str(grade).replace('grade-', '')
+        if date:
+            query['date'] = date
+        entries = list(timetable_collection.find(query).sort([('date', 1), ('start_time', 1)]))
+        for e in entries:
+            e['_id'] = str(e['_id'])
+        return jsonify({'entries': entries}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Admin: add a timetable entry
+@app.route('/api/timetable', methods=['POST'])
+@token_required
+def add_timetable_entry(current_admin):
+    try:
+        data = request.get_json()
+        required = ['subject', 'grade', 'date', 'start_time', 'end_time']
+        for f in required:
+            if not data.get(f):
+                return jsonify({'message': f'{f} is required'}), 400
+        doc = {
+            'subject': str(data['subject']).strip().lower(),
+            'grade': str(data['grade']).replace('grade-', ''),
+            'date': data['date'],
+            'start_time': data['start_time'],
+            'end_time': data['end_time'],
+            'created_at': datetime.utcnow(),
+            'created_by': str(current_admin['_id'])
+        }
+        res = timetable_collection.insert_one(doc)
+        return jsonify({'message': 'Timetable entry added', 'id': str(res.inserted_id)}), 201
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Admin: delete an entry
+@app.route('/api/timetable/<entry_id>', methods=['DELETE'])
+@token_required
+def delete_timetable_entry(current_admin, entry_id):
+    try:
+        result = timetable_collection.delete_one({'_id': ObjectId(entry_id)})
+        if result.deleted_count == 0:
+            return jsonify({'message': 'Entry not found'}), 404
+        return jsonify({'message': 'Entry deleted'}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Settings: current admin profile
+@app.route('/api/admin/me', methods=['GET'])
+@token_required
+def get_me(current_admin):
+    try:
+        admin = current_admin.copy()
+        admin['_id'] = str(admin['_id'])
+        # hide password
+        admin.pop('password', None)
+        return jsonify(admin), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/admin/me', methods=['PUT'])
+@token_required
+def update_me(current_admin):
+    try:
+        data = request.get_json()
+        update = {}
+        if 'full_name' in data: update['full_name'] = data['full_name']
+        if 'email' in data: update['email'] = data['email']
+        if not update:
+            return jsonify({'message': 'Nothing to update'}), 400
+        admins_collection.update_one({'_id': current_admin['_id']}, {'$set': update})
+        return jsonify({'message': 'Profile updated'}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/admin/change-password', methods=['POST'])
+@token_required
+def change_password(current_admin):
+    try:
+        data = request.get_json()
+        if not data.get('current_password') or not data.get('new_password'):
+            return jsonify({'message': 'Passwords are required'}), 400
+        if not check_password_hash(current_admin['password'], data['current_password']):
+            return jsonify({'message': 'Current password is incorrect'}), 400
+        hashed = generate_password_hash(data['new_password'])
+        admins_collection.update_one({'_id': current_admin['_id']}, {'$set': {'password': hashed}})
+        return jsonify({'message': 'Password changed'}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Application settings (single document)
+app_settings_collection = db.app_settings
+
+@app.route('/api/settings/app', methods=['GET'])
+@token_required
+def get_app_settings(current_admin):
+    try:
+        doc = app_settings_collection.find_one({}) or {}
+        if '_id' in doc: doc['_id'] = str(doc['_id'])
+        return jsonify({
+            'site_name': doc.get('site_name', 'EduNova'),
+            'logo_url': doc.get('logo_url', ''),
+            'cors_origins': doc.get('cors_origins', []),
+            'enable_registrations': doc.get('enable_registrations', True)
+        }), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/settings/app', methods=['PUT'])
+@token_required
+def update_app_settings(current_admin):
+    try:
+        data = request.get_json()
+        update = {
+            'site_name': data.get('site_name', 'EduNova'),
+            'logo_url': data.get('logo_url', ''),
+            'cors_origins': data.get('cors_origins', []),
+            'enable_registrations': bool(data.get('enable_registrations', True)),
+            'updated_at': datetime.utcnow(),
+            'updated_by': str(current_admin['_id'])
+        }
+        app_settings_collection.update_one({}, {'$set': update}, upsert=True)
+        return jsonify({'message': 'Settings updated'}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Admin logout (stateless JWT: client should discard token)
+@app.route('/api/admin/logout', methods=['POST'])
+@token_required
+def admin_logout(current_admin):
+    try:
+        # With stateless JWT there is nothing to do server-side (unless token blacklist is used)
+        return jsonify({'message': 'Logged out'}), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Dashboard Quick Actions
+@app.route('/api/dashboard/quick-actions', methods=['POST'])
+@token_required
+def perform_quick_action(current_admin):
+    try:
+        data = request.get_json()
+        action = data.get('action')
+        
+        if action == 'manage_courses':
+            return jsonify({
+                'message': 'Redirecting to course management',
+                'redirect': '/courses'
+            }), 200
+        elif action == 'manage_students':
+            return jsonify({
+                'message': 'Redirecting to student management',
+                'redirect': '/students'
+            }), 200
+        else:
+            return jsonify({'message': 'Invalid action'}), 400
+            
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Public API to get current registration link (no authentication required)
+@app.route('/api/public/registration-link', methods=['GET'])
+def get_public_registration_link():
+    try:
+        # Get the current active registration link
+        link_doc = registration_links_collection.find_one({'is_active': True})
+        
+        if link_doc:
+            return jsonify({
+                'link': link_doc['link'],
+                'title': link_doc.get('title', 'Student Registration'),
+                'available': True
+            }), 200
+        else:
+            return jsonify({
+                'link': None,
+                'title': 'Student Registration',
+                'available': False,
+                'message': 'No registration form available'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Student Registration Link Management
+@app.route('/api/student-registration/link', methods=['GET'])
+@token_required
+def get_registration_link(current_admin):
+    try:
+        # Get the current registration link
+        link_doc = registration_links_collection.find_one({'is_active': True})
+        
+        if link_doc:
+            return jsonify({
+                'link': link_doc['link'],
+                'title': link_doc.get('title', 'Student Registration'),
+                'created_at': link_doc['created_at'].isoformat(),
+                'created_by': link_doc['created_by']
+            }), 200
+        else:
+            return jsonify({'message': 'No active registration link found'}), 404
+            
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/student-registration/link', methods=['POST'])
+@token_required
+def add_registration_link(current_admin):
+    try:
+        data = request.get_json()
+        
+        if not data.get('link'):
+            return jsonify({'message': 'Registration link is required'}), 400
+        
+        # Deactivate any existing active links
+        registration_links_collection.update_many(
+            {'is_active': True},
+            {'$set': {'is_active': False, 'updated_at': datetime.utcnow()}}
+        )
+        
+        # Create new registration link
+        link_data = {
+            'link': data['link'],
+            'title': data.get('title', 'Student Registration'),
+            'is_active': True,
+            'created_at': datetime.utcnow(),
+            'created_by': str(current_admin['_id']),
+            'admin_username': current_admin['username']
+        }
+        
+        result = registration_links_collection.insert_one(link_data)
+        
+        return jsonify({
+            'message': 'Registration link added successfully',
+            'link_id': str(result.inserted_id)
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/student-registration/link', methods=['PUT'])
+@token_required
+def update_registration_link(current_admin):
+    try:
+        data = request.get_json()
+        
+        if not data.get('link'):
+            return jsonify({'message': 'Registration link is required'}), 400
+        
+        # Find the current active link
+        current_link = registration_links_collection.find_one({'is_active': True})
+        
+        if not current_link:
+            return jsonify({'message': 'No active registration link to update'}), 404
+        
+        # Update the link
+        result = registration_links_collection.update_one(
+            {'_id': current_link['_id']},
+            {
+                '$set': {
+                    'link': data['link'],
+                    'title': data.get('title', 'Student Registration'),
+                    'updated_at': datetime.utcnow(),
+                    'updated_by': str(current_admin['_id']),
+                    'admin_username': current_admin['username']
+                }
+            }
+        )
+        
+        if result.modified_count > 0:
+            return jsonify({'message': 'Registration link updated successfully'}), 200
+        else:
+            return jsonify({'message': 'Failed to update registration link'}), 500
+            
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/student-registration/link/history', methods=['GET'])
+@token_required
+def get_registration_link_history(current_admin):
+    try:
+        # Get all registration links (for history)
+        links = list(registration_links_collection.find().sort('created_at', -1))
+        
+        # Convert ObjectId to string
+        for link in links:
+            link['_id'] = str(link['_id'])
+            link['created_at'] = link['created_at'].isoformat()
+            if 'updated_at' in link:
+                link['updated_at'] = link['updated_at'].isoformat()
+        
+        return jsonify({'links': links}), 200
         
     except Exception as e:
         return jsonify({'message': f'Error: {str(e)}'}), 500
@@ -465,95 +1093,3 @@ if __name__ == '__main__':
     print(f"\n🌐 Access your app at: http://{HOST}:{PORT}")
     
     app.run(host=HOST, port=PORT, debug=DEBUG)
-
-
-
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from pymongo import MongoClient
-from werkzeug.security import generate_password_hash, check_password_hash
-import jwt
-from datetime import datetime, timedelta
-import os
-from dotenv import load_dotenv
-from bson import ObjectId
-
-# Load .env file
-load_dotenv()
-
-app = Flask(__name__)
-CORS(app)
-
-# Config
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-mongo_uri = os.getenv('MONGO_URI')
-
-# Connect to MongoDB
-client = MongoClient(mongo_uri)
-db = client['edunova']
-admins_collection = db['admins']
-
-# Register Route
-@app.route('/api/admin/register', methods=['POST'])
-def register_admin():
-    data = request.get_json()
-    required = ['username', 'email', 'password', 'full_name']
-    
-    if not all(field in data for field in required):
-        return jsonify({'message': 'Missing required fields'}), 400
-
-    # Check if exists
-    if admins_collection.find_one({'$or': [{'username': data['username']}, {'email': data['email']}] }):
-        return jsonify({'message': 'Admin already exists'}), 409
-
-    hashed_pw = generate_password_hash(data['password'])
-
-    admin = {
-        'username': data['username'],
-        'email': data['email'],
-        'password': hashed_pw,
-        'full_name': data['full_name'],
-        'role': 'admin',
-        'created_at': datetime.utcnow(),
-        'is_active': True
-    }
-
-    result = admins_collection.insert_one(admin)
-    return jsonify({'message': 'Registered', 'admin_id': str(result.inserted_id)}), 201
-
-# Login Route
-@app.route('/api/admin/login', methods=['POST'])
-def login_admin():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-
-    admin = admins_collection.find_one({'username': username})
-
-    if not admin:
-        return jsonify({'message': 'Invalid username'}), 401
-
-    if not check_password_hash(admin['password'], password):
-        return jsonify({'message': 'Invalid password'}), 401
-
-    if not admin.get('is_active', True):
-        return jsonify({'message': 'Account inactive'}), 403
-
-    token = jwt.encode({
-        'admin_id': str(admin['_id']),
-        'exp': datetime.utcnow() + timedelta(hours=24)
-    }, app.config['SECRET_KEY'], algorithm='HS256')
-
-    return jsonify({
-        'message': 'Login successful',
-        'token': token,
-        'admin': {
-            'username': admin['username'],
-            'email': admin['email'],
-            'role': admin['role'],
-            'full_name': admin['full_name']
-        }
-    })
-
-if __name__ == '__main__':
-    app.run(debug=True)
