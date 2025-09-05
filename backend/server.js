@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 // Import feedback routes
 const feedbackRoutes = require('./routes/feedback'); // Ensure path is correct
@@ -13,8 +14,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, '../public')));
+app.use('/shared', express.static(path.join(__dirname, '../shared')));
+app.use('/admin', express.static(path.join(__dirname, '../admin')));
+
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/edunova', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
@@ -26,7 +32,12 @@ const timetableSchema = new mongoose.Schema({
     day: String,
     time: String,
     subject: String,
-    grade: String
+    grade: String,
+    date: String,
+    start_time: String,
+    end_time: String,
+    startTime: String,
+    endTime: String
 });
 const Timetable = mongoose.model('Timetable', timetableSchema);
 
@@ -56,8 +67,29 @@ app.get('/api/timetable', async (req, res) => {
     }
 });
 
+// Serve main pages
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.get('/about', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/about.html'));
+});
+
+app.get('/courses', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/courses.html'));
+});
+
+app.get('/timetable', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/timetable.html'));
+});
+
+app.get('/contact', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/Contact.html'));
+});
+
 // Test route
-app.get('/', (req, res) => res.send('Backend is working!'));
+app.get('/api', (req, res) => res.send('Backend API is working!'));
 
 // Start server
 const PORT = process.env.PORT || 5000;

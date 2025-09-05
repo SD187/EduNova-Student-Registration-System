@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_cors import CORS
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -24,6 +24,11 @@ CORS(app)
 
 # Get the parent directory (where frontend files are located)
 FRONTEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Define directory paths for the new structure
+PUBLIC_DIR = os.path.join(FRONTEND_DIR, 'public')
+ADMIN_DIR = os.path.join(FRONTEND_DIR, 'admin')
+SHARED_DIR = os.path.join(FRONTEND_DIR, 'shared')
 
 # MongoDB connection
 client = MongoClient(Config.MONGODB_URI)
@@ -65,19 +70,172 @@ def token_required(f):
 # FRONTEND SERVING ROUTES
 @app.route('/')
 def serve_index():
-    return send_from_directory(FRONTEND_DIR, 'adminfront.html')
+    """Serve the public home page"""
+    return send_from_directory(PUBLIC_DIR, 'index.html')
 
+# User/Public page routes
+@app.route('/index.html')
+def serve_index_html():
+    """Serve the index.html file directly"""
+    return send_from_directory(PUBLIC_DIR, 'index.html')
+
+@app.route('/about')
+def serve_about():
+    """Serve the about page"""
+    return send_from_directory(PUBLIC_DIR, 'about.html')
+
+@app.route('/courses')
+def serve_courses():
+    """Serve the courses page"""
+    return send_from_directory(PUBLIC_DIR, 'courses.html')
+
+@app.route('/timetable')
+def serve_timetable():
+    """Serve the timetable page"""
+    return send_from_directory(PUBLIC_DIR, 'timetable.html')
+
+@app.route('/contact')
+def serve_contact():
+    """Serve the contact page"""
+    return send_from_directory(PUBLIC_DIR, 'Contact.html')
+
+# Direct file access routes for public HTML files
+@app.route('/about.html')
+def serve_about_html():
+    """Serve the about.html file directly"""
+    return send_from_directory(PUBLIC_DIR, 'about.html')
+
+@app.route('/courses.html')
+def serve_courses_html():
+    """Serve the courses.html file directly"""
+    return send_from_directory(PUBLIC_DIR, 'courses.html')
+
+@app.route('/timetable.html')
+def serve_timetable_html():
+    """Serve the timetable.html file directly"""
+    return send_from_directory(PUBLIC_DIR, 'timetable.html')
+
+@app.route('/Contact.html')
+def serve_contact_html():
+    """Serve the Contact.html file directly"""
+    return send_from_directory(PUBLIC_DIR, 'Contact.html')
+
+@app.route('/admin')
+@app.route('/admin/')
+def serve_admin_dashboard():
+    """Serve the admin dashboard (requires authentication)"""
+    return send_from_directory(ADMIN_DIR, 'Dashboard.html')
+
+@app.route('/admin/index.html')
+def redirect_admin_index():
+    """Redirect /admin/index.html to /admin"""
+    return redirect('/admin')
+
+@app.route('/admin/<path:filename>')
+def serve_admin_files(filename):
+    """Serve admin-specific files"""
+    return send_from_directory(ADMIN_DIR, filename)
+
+@app.route('/admin/css/<path:filename>')
+def serve_admin_css(filename):
+    """Serve admin CSS files"""
+    return send_from_directory(os.path.join(ADMIN_DIR, 'css'), filename)
+
+@app.route('/admin/js/<path:filename>')
+def serve_admin_js(filename):
+    """Serve admin JavaScript files"""
+    return send_from_directory(os.path.join(ADMIN_DIR, 'js'), filename)
+
+@app.route('/public/<path:filename>')
+def serve_public_files(filename):
+    """Serve public files"""
+    return send_from_directory(PUBLIC_DIR, filename)
+
+@app.route('/public/css/<path:filename>')
+def serve_public_css(filename):
+    """Serve public CSS files"""
+    return send_from_directory(os.path.join(PUBLIC_DIR, 'css'), filename)
+
+@app.route('/public/js/<path:filename>')
+def serve_public_js(filename):
+    """Serve public JavaScript files"""
+    return send_from_directory(os.path.join(PUBLIC_DIR, 'js'), filename)
+
+@app.route('/shared/<path:filename>')
+def serve_shared_files(filename):
+    """Serve shared files"""
+    return send_from_directory(SHARED_DIR, filename)
+
+@app.route('/shared/css/<path:filename>')
+def serve_shared_css(filename):
+    """Serve shared CSS files"""
+    return send_from_directory(os.path.join(SHARED_DIR, 'css'), filename)
+
+@app.route('/shared/js/<path:filename>')
+def serve_shared_js(filename):
+    """Serve shared JavaScript files"""
+    return send_from_directory(os.path.join(SHARED_DIR, 'js'), filename)
+
+@app.route('/shared/assets/<path:filename>')
+def serve_shared_assets(filename):
+    """Serve shared asset files"""
+    return send_from_directory(os.path.join(SHARED_DIR, 'assets'), filename)
+
+# Legacy route support for backward compatibility - moved to end to avoid conflicts
 @app.route('/<path:filename>')
-def serve_frontend_files(filename):
-    # Handle different file types
+def serve_legacy_files(filename):
+    """Handle legacy file requests with intelligent routing"""
+    # Skip if it's a known route that should be handled by specific routes
+    if filename in ['about', 'courses', 'timetable', 'contact', 'admin']:
+        return jsonify({'error': 'Route not found'}), 404
+        
+    # Handle different file types and routes
     if filename.endswith('.html'):
-        return send_from_directory(FRONTEND_DIR, filename)
+        # Check if it's an admin file
+        if filename in ['Dashboard.html', 'mteachers.html', 'Mcources.html', 'mtime.html', 'mstudent.html', 'settings.html', 'adminlogin.html', 'adminfront.html', 'fpassword.html', 'logout.html', 'createaccount.html']:
+            return send_from_directory(ADMIN_DIR, filename)
+        # Check if it's a public file
+        elif filename in ['index.html', 'about.html', 'Contact.html', 'courses.html', 'timetable.html']:
+            return send_from_directory(PUBLIC_DIR, filename)
+        else:
+            # Try to serve from appropriate directory
+            try:
+                return send_from_directory(PUBLIC_DIR, filename)
+            except:
+                try:
+                    return send_from_directory(ADMIN_DIR, filename)
+                except:
+                    return jsonify({'error': 'File not found'}), 404
     elif filename.startswith('js/'):
-        return send_from_directory(FRONTEND_DIR, filename)
+        # Try to serve from shared directory first, then admin, then public
+        try:
+            return send_from_directory(os.path.join(SHARED_DIR, 'js'), filename[3:])
+        except:
+            try:
+                return send_from_directory(os.path.join(ADMIN_DIR, 'js'), filename[3:])
+            except:
+                try:
+                    return send_from_directory(os.path.join(PUBLIC_DIR, 'js'), filename[3:])
+                except:
+                    return jsonify({'error': 'File not found'}), 404
     elif filename.startswith('css/'):
-        return send_from_directory(FRONTEND_DIR, filename)
+        # Try to serve from shared directory first, then admin, then public
+        try:
+            return send_from_directory(os.path.join(SHARED_DIR, 'css'), filename[5:])
+        except:
+            try:
+                return send_from_directory(os.path.join(PUBLIC_DIR, 'css'), filename[5:])
+            except:
+                try:
+                    return send_from_directory(os.path.join(ADMIN_DIR, 'css'), filename[5:])
+                except:
+                    return jsonify({'error': 'File not found'}), 404
     elif filename.startswith('assets/'):
-        return send_from_directory(FRONTEND_DIR, filename)
+        # Try to serve from shared directory first
+        try:
+            return send_from_directory(os.path.join(SHARED_DIR, 'assets'), filename[7:])
+        except:
+            return jsonify({'error': 'File not found'}), 404
     else:
         # Try to serve from root directory
         try:
@@ -95,7 +253,10 @@ def health_check():
             'status': 'healthy',
             'database': 'connected',
             'timestamp': datetime.utcnow().isoformat(),
-            'frontend_dir': FRONTEND_DIR
+            'frontend_dir': FRONTEND_DIR,
+            'public_dir': PUBLIC_DIR,
+            'admin_dir': ADMIN_DIR,
+            'shared_dir': SHARED_DIR
         }), 200
     except Exception as e:
         return jsonify({
@@ -1089,7 +1250,12 @@ if __name__ == '__main__':
     print(f"\n🚀 Starting EduNova Admin Backend...")
     print(f"📍 Server: http://{HOST}:{PORT}")
     print(f"📁 Frontend directory: {FRONTEND_DIR}")
+    print(f"📂 Public directory: {PUBLIC_DIR}")
+    print(f"🔐 Admin directory: {ADMIN_DIR}")
+    print(f"🔗 Shared directory: {SHARED_DIR}")
     print(f"🔧 Debug mode: {DEBUG}")
     print(f"\n🌐 Access your app at: http://{HOST}:{PORT}")
+    print(f"👥 Public pages: http://{HOST}:{PORT}/")
+    print(f"🔐 Admin panel: http://{HOST}:{PORT}/admin")
     
     app.run(host=HOST, port=PORT, debug=DEBUG)

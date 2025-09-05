@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduNova - Feedback & Contacts</title>
+  <link rel="stylesheet" href="/shared/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body id="feedback-page">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-name">
+      <img src="/shared/assets/logo.jpeg" alt="EduNova Logo" class="logo">
+      <span class="institution-name">EduNova</span>
+    </div>
+    <div class="nav-wrapper">
+      <nav>
+        <a href="/">Home</a>
+        <a href="/about">About Us</a>
+        <a href="/courses">Courses</a>
+        <a href="/timetable">Timetable</a>
+        <a href="/contact" class="active">Contact</a>
+        <a href="/admin/adminfront.html" class="admin-btn">Admin Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-offset">
+    <div class="feedback-container">
+
+      <!-- Left Section: Feedback Form + Dynamic Feedbacks -->
+      <section class="left-section">
+        <h1>Words That Inspire Us</h1>
+        <p>Give feedback about your experience with EduNova</p>
+
+        <form class="feedback-form" id="feedbackForm">
+          <input type="text" placeholder="Your Name" required>
+          <textarea placeholder="Your Comment" required></textarea>
+          <button type="submit">Submit</button>
+        </form>
+
+        <!-- Dynamic Feedbacks will appear here -->
+        <div id="dynamic-feedbacks"></div>
+
+        
+      </section>
+
+      <!-- Right Section: Contact Info inside Box -->
+      <div class="right-section">
+        <div class="right-inner">
+          <div class="logo-card">
+            <img src="/shared/assets/logo.jpeg" alt="EduNova Logo">
+            <h1> Our Contacts  </h1>
+            <p class="tagline">"Give us a call or drop by anytime, we endeavour to answer all enquiries within 24 hours on business days. We will be happy to answer your questions."</p>
+          </div>
+
+          <div class="contact-info">
+            <div class="contact-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Embilipitiya, Sri Lanka</span>
+            </div>
+            <div class="contact-item">
+              <i class="fas fa-envelope"></i>
+              <span>edunovaacademy.lk@gmail.com</span>
+            </div>
+            <div class="contact-item">
+              <i class="fas fa-phone-alt"></i>
+              <span>0728561668 / 0711733650</span>
+            </div>
+          </div>
+
+          <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-whatsapp"></i></a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 EduNova Academy | All Rights Reserved</p>
+    <div class="footer-middle">
+      <span><i class="fas fa-map-marker-alt"></i> Embilipitiya, Sri Lanka</span> |
+      <span><i class="fas fa-envelope"></i> edunovaacademy.lk@gmail.com</span> |
+      <span><i class="fas fa-phone"></i> 0728561668 / 0711733650</span>
+    </div>
+  </footer>
+
+  <!-- Script for Dynamic Feedback -->
+<script>
+const form = document.getElementById('feedbackForm');
+const feedbackContainer = document.getElementById('dynamic-feedbacks');
+
+async function loadFeedbacks() {
+  try {
+    const res = await fetch('/api/feedback');
+    const feedbacks = await res.json();
+
+    feedbackContainer.innerHTML = '';
+
+    feedbacks.forEach(fb => {
+      const div = document.createElement('div');
+      div.className = 'testimonial dynamic';
+      div.innerHTML = `<p>"${fb.message}"</p><p class="author">- ${fb.name}</p>`;
+      feedbackContainer.appendChild(div);
+    });
+  } catch (err) {
+    console.error('Failed to load feedbacks', err);
+  }
+}
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = form.querySelector('input').value;
+  const message = form.querySelector('textarea').value;
+
+  try {
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, message })
+    });
+
+    form.reset();
+    loadFeedbacks(); // refresh only newest 2 feedbacks
+  } catch (err) {
+    console.error('Error submitting feedback', err);
+  }
+});
+
+loadFeedbacks();
+</script>
+</body>
+</html>

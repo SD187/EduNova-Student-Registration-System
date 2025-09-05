@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNova - Manage Students</title>
+    <link rel="stylesheet" href="/admin/css/Dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/shared/assets/logo.jpeg" alt="EduNova Logo">
+            <h2>EduNova</h2>
+            <p>Admin</p>
+        </div>
+        
+        <nav>
+            <ul>
+                <li><a href="/admin/Dashboard.html" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a></li>
+                <li><a href="/admin/mstudent.html" class="active" data-page="students">
+                    <i class="fas fa-user-graduate"></i>
+                    <span>Manage Students</span>
+                </a></li>
+                <li><a href="/admin/mteachers.html" data-page="teachers">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Manage Teachers</span>
+                </a></li>
+                <li><a href="/admin/Mcourses.html" data-page="courses">
+                    <i class="fas fa-book"></i>
+                    <span>Manage Courses</span>
+                </a></li>
+                <li><a href="/admin/mtime.html" data-page="timetable">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Manage Time Table</span>
+                </a></li>
+                <li><a href="/admin/settings.html" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a></li>
+            </ul>
+        </nav>
+        
+        <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </button>
+    </aside>
+
+    <!-- Main Content Container -->
+    <div class="main-container">
+        <!-- Top Navigation -->
+        <header class="top-nav">
+            <div class="nav-brand">
+                <img src="/shared/assets/logo.jpeg" alt="EduNova Logo" class="nav-logo">
+                <span class="nav-title">EduNova</span>
+            </div>
+            <h3 class="page-title">Manage Students</h3>
+            <nav class="top-nav-links">
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/about">About Us</a></li>
+                    <li><a href="/courses">Courses</a></li>
+                    <li><a href="/timetable">Time Table</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content">
+                <h1>Manage Students</h1>
+                <p class="instructions">* Paste the Google Form link below to update the registration form for students.</p>
+                
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="google-form-link">📤 Upload google form link</label>
+                        <div class="input-group">
+                            <input type="url" id="google-form-link" placeholder="https://docs.google.com/forms/...">
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-primary add-link-btn">Add Link</button>
+                        <button class="btn btn-secondary update-link-btn">Update Link</button>
+                    </div>
+                </div>
+
+                <div class="status-message" id="statusMessage" style="display: none;"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/shared/js/fix-navigation.js"></script>
+    <script src="/admin/js/dashboard.js"></script>
+    <script src="/admin/js/mstudent.js"></script>
+</body>
+</html>
