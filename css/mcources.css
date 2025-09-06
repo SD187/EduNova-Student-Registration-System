@@ -766,3 +766,51 @@ body {
 .nav-link:hover::before {
     left: 100%;
 }
+
+#coursesTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+#coursesTable th, #coursesTable td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+#coursesTable th {
+  background-color: #f4f4f4;
+}
+
+#coursesTable tr:hover {
+  background-color: #f1f1f1;
+}
+
+#coursesTable .edit-btn,
+#coursesTable .delete-btn {
+  padding: 5px 10px;
+  margin-right: 5px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+#coursesTable .edit-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+#coursesTable .delete-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+#coursesTable .edit-btn:hover {
+  background-color: #45a049;
+}
+
+#coursesTable .delete-btn:hover {
+  background-color: #da190b;
+}

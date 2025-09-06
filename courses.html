@@ -1,129 +1,406 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Courses | EduNova Academy</title>
-
-  <!-- Styles & Icons -->
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-  <!-- Script -->
-  <script src="js/script.js" defer></script>
+  <script src="js/courses.js" defer></script>
+  <style>
+    /* Enhanced Year Selection Styling */
+    .year-selection-container {
+      max-width: 500px;
+      margin: 2rem auto;
+      text-align: center;
+    }
+
+    .year-dropdown-wrapper {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    #year-select {
+      width: 100%;
+      padding: 1rem 3rem 1rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+      border: 2px solid #e0e7ff;
+      border-radius: 12px;
+      color: #374151;
+      cursor: pointer;
+      appearance: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    #year-select:hover {
+      border-color: #818cf8;
+      box-shadow: 0 4px 12px rgba(129, 140, 248, 0.15);
+      transform: translateY(-1px);
+    }
+
+    #year-select:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .year-dropdown-wrapper::after {
+      content: '\f107';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6b7280;
+      pointer-events: none;
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .year-dropdown-wrapper:hover::after {
+      color: #818cf8;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .year-description {
+      color: #6b7280;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+      font-style: italic;
+    }
+
+    /* Enhanced Subjects Styling */
+    .section-description {
+      text-align: center;
+      color: #6b7280;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    .subjects-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 1rem;
+    }
+
+    .enhanced-subject {
+      position: relative;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      overflow: hidden;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .enhanced-subject:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+      border-color: #6366f1;
+    }
+
+    .enhanced-subject.selected {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      transform: scale(1.02);
+      box-shadow: 0 15px 35px rgba(99, 102, 241, 0.3);
+    }
+
+    .subject-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #6366f1;
+      transition: all 0.3s ease;
+    }
+
+    .enhanced-subject:hover .subject-icon {
+      transform: scale(1.1);
+      color: #4f46e5;
+    }
+
+    .enhanced-subject.selected .subject-icon {
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .subject-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+      transition: color 0.3s ease;
+    }
+
+    .enhanced-subject.selected .subject-title {
+      color: white;
+    }
+
+    .subject-desc {
+      font-size: 0.95rem;
+      color: #6b7280;
+      line-height: 1.4;
+      margin: 0;
+      transition: color 0.3s ease;
+    }
+
+    .enhanced-subject.selected .subject-desc {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .subject-overlay {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.6s ease;
+      pointer-events: none;
+    }
+
+    .enhanced-subject:hover .subject-overlay {
+      left: 100%;
+    }
+
+    /* Subject-specific colors */
+    .enhanced-subject[data-subject="English"]:hover {
+      border-color: #ec4899;
+    }
+
+    .enhanced-subject[data-subject="English"].selected {
+      background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+    }
+
+    .enhanced-subject[data-subject="Science"]:hover {
+      border-color: #06b6d4;
+    }
+
+    .enhanced-subject[data-subject="Science"].selected {
+      background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    }
+
+    .enhanced-subject[data-subject="Buddhism"]:hover {
+      border-color: #f59e0b;
+    }
+
+    .enhanced-subject[data-subject="Buddhism"].selected {
+      background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+    }
+
+    .enhanced-subject[data-subject="Mathematics"]:hover {
+      border-color: #8b5cf6;
+    }
+
+    .enhanced-subject[data-subject="Mathematics"].selected {
+      background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    }
+
+    .enhanced-subject[data-subject="Sinhala"]:hover {
+      border-color: #10b981;
+    }
+
+    .enhanced-subject[data-subject="Sinhala"].selected {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .enhanced-subject[data-subject="History"]:hover {
+      border-color: #84cc16;
+    }
+
+    .enhanced-subject[data-subject="History"].selected {
+      background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);
+    }
+
+    @media (max-width: 768px) {      
+      .year-selection-container {
+        margin: 1rem;
+      }
+
+      .subjects-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .enhanced-subject {
+        min-height: 160px;
+        padding: 1.5rem;
+      }
+
+      .subject-icon {
+        font-size: 2.5rem;
+      }
+
+      .subject-title {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <!-- Header (same as Home) -->
-  <header>
-    <div class="logo-name">
-      <img src="assets/logo.jpeg" alt="EduNova Logo" class="logo">
-      <span class="institution-name">EduNova</span>
+<header>
+  <div class="logo-name">
+    <img src="assets/logo.jpeg" alt="EduNova Logo" class="logo">
+    <span class="institution-name">EduNova</span>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="courses.html" class="active">Courses</a>
+    <a href="timetable.html">Timetable</a>
+    <a href="contact.html">Contact</a>
+    <a href="admin/login.html" class="admin-btn">Admin Login</a>
+  </nav>
+</header>
+
+<main class="page-offset">
+  <section class="courses-wizard container">
+    <ol class="wizard-steps">
+      <li class="step active" data-step="1"><span>1</span> Choose Subject</li>
+      <li class="step" data-step="2"><span>2</span> Choose Grade</li>
+      <li class="step" data-step="3"><span>3</span> Choose Year</li>
+      <li class="step" data-step="4"><span>4</span> Study Resources</li>
+    </ol>
+
+    <div class="selection-summary">
+      <span class="chip subject-chip" hidden><strong>Subject:</strong> <b id="chosenSubject"></b></span>
+      <span class="chip grade-chip" hidden><strong>Grade:</strong> <b id="chosenGrade"></b></span>
+      <span class="chip year-chip" hidden><strong>Year:</strong> <b id="chosenYear"></b></span>
     </div>
-    <div class="nav-wrapper">
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="about.html">About Us</a>
-        <a href="courses.html" class="active">Courses</a>
-        <a href="timetable.html">Timetable</a>
-        <a href="contact.html">Contact</a>
-        <a href="admin/login.html" class="admin-btn">Admin Login</a>
-      </nav>
-    </div>
-  </header>
 
-  <main class="page-offset">
-    <!-- Steps / Progress -->
-    <section class="courses-wizard container">
-      <ol class="wizard-steps" aria-label="Course selection steps">
-        <li class="step active" data-step="1"><span>1</span> Choose Subject</li>
-        <li class="step" data-step="2"><span>2</span> Choose Grade</li>
-        <li class="step" data-step="3"><span>3</span> Study Resources</li>
-      </ol>
-
-      <!-- Selection summary -->
-      <div class="selection-summary" aria-live="polite">
-        <span class="chip subject-chip" hidden><i class="fa-solid fa-book"></i> <strong>Subject:</strong> <b id="chosenSubject"></b></span>
-        <span class="chip grade-chip" hidden><i class="fa-solid fa-graduation-cap"></i> <strong>Grade:</strong> <b id="chosenGrade"></b></span>
-      </div>
-
-      <!-- Panel 1: Subjects -->
-      <section id="panel-subjects" class="panel active" aria-labelledby="subject-heading">
-        <h2 id="subject-heading" class="panel-title">Select a Subject</h2>
+    <!-- Panel 1: Subjects - ENHANCED -->
+    <section id="panel-subjects" class="panel active">
+      <h2>Select a Subject</h2>
+      <p class="section-description">Choose your subject to access study materials and resources</p>
+      <div class="subjects-container">
         <div class="grid subjects-grid">
-          <!-- Cards created in HTML (easy to edit), JS binds clicks -->
-          <button class="card subject-card" data-subject="English">
-            <i class="fa-solid fa-language"></i>
-            <h3>English</h3>
+          <button class="card subject-card enhanced-subject" data-subject="English">
+            <div class="subject-icon">
+              <i class="fas fa-book-open"></i>
+            </div>
+            <h3 class="subject-title">English</h3>
+            <p class="subject-desc">Language & Literature</p>
+            <div class="subject-overlay"></div>
           </button>
-          <button class="card subject-card" data-subject="Science">
-            <i class="fa-solid fa-flask"></i>
-            <h3>Science</h3>
+          
+          <button class="card subject-card enhanced-subject" data-subject="Science">
+            <div class="subject-icon">
+              <i class="fas fa-flask"></i>
+            </div>
+            <h3 class="subject-title">Science</h3>
+            <p class="subject-desc">Physics, Chemistry & Biology</p>
+            <div class="subject-overlay"></div>
           </button>
-          <button class="card subject-card" data-subject="Buddhism">
-            <i class="fa-solid fa-leaf"></i>
-            <h3>Buddhism</h3>
+          
+          <button class="card subject-card enhanced-subject" data-subject="Buddhism">
+            <div class="subject-icon">
+              <i class="fas fa-om"></i>
+            </div>
+            <h3 class="subject-title">Buddhism</h3>
+            <p class="subject-desc">Buddhist Philosophy & Culture</p>
+            <div class="subject-overlay"></div>
           </button>
-          <button class="card subject-card" data-subject="Mathematics">
-            <i class="fa-solid fa-square-root-variable"></i>
-            <h3>Mathematics</h3>
+          
+          <button class="card subject-card enhanced-subject" data-subject="Mathematics">
+            <div class="subject-icon">
+              <i class="fas fa-calculator"></i>
+            </div>
+            <h3 class="subject-title">Mathematics</h3>
+            <p class="subject-desc">Algebra, Geometry & Statistics</p>
+            <div class="subject-overlay"></div>
           </button>
-          <button class="card subject-card" data-subject="Sinhala">
-            <i class="fa-solid fa-feather"></i>
-            <h3>Sinhala</h3>
+          
+          <button class="card subject-card enhanced-subject" data-subject="Sinhala">
+            <div class="subject-icon">
+              <i class="fas fa-language"></i>
+            </div>
+            <h3 class="subject-title">Sinhala</h3>
+            <p class="subject-desc">Native Language & Literature</p>
+            <div class="subject-overlay"></div>
           </button>
-          <button class="card subject-card" data-subject="History">
-            <i class="fa-solid fa-landmark"></i>
-            <h3>History</h3>
+          
+          <button class="card subject-card enhanced-subject" data-subject="History">
+            <div class="subject-icon">
+              <i class="fas fa-landmark"></i>
+            </div>
+            <h3 class="subject-title">History</h3>
+            <p class="subject-desc">World & Sri Lankan History</p>
+            <div class="subject-overlay"></div>
           </button>
         </div>
-      </section>
-
-      <!-- Panel 2: Grades -->
-      <section id="panel-grades" class="panel" aria-labelledby="grade-heading">
-        <div class="panel-header">
-          <button class="link back-btn" data-back="subjects"><i class="fa-solid fa-arrow-left"></i> Back to Subjects</button>
-        </div>
-        <h2 id="grade-heading" class="panel-title">Choose Grade</h2>
-        <div class="grid grades-grid">
-          <!-- Grade buttons -->
-          <button class="chip-btn grade-btn" data-grade="6">Grade 6</button>
-          <button class="chip-btn grade-btn" data-grade="7">Grade 7</button>
-          <button class="chip-btn grade-btn" data-grade="8">Grade 8</button>
-          <button class="chip-btn grade-btn" data-grade="9">Grade 9</button>
-          <button class="chip-btn grade-btn" data-grade="10">Grade 10</button>
-          <button class="chip-btn grade-btn" data-grade="11">Grade 11</button>
-        </div>
-      </section>
-
-      <!-- Panel 3: Resources -->
-      <section id="panel-resources" class="panel" aria-labelledby="resources-heading">
-        <div class="panel-header">
-          <button class="link back-btn" data-back="grades"><i class="fa-solid fa-arrow-left"></i> Back to Grades</button>
-        </div>
-        <h2 id="resources-heading" class="panel-title">Study Resources</h2>
-        <p class="muted">Pick what you want to study for <b id="summarySubject">—</b>, <b id="summaryGrade">—</b>.</p>
-        <div class="grid resources-grid">
-          <a class="card resource-card" data-type="pastpapers" href="#" role="button">
-            <i class="fa-solid fa-file-lines"></i>
-            <h3>Past Papers</h3>
-            <p>Practice with real exam papers from previous years.</p>
-          </a>
-          <a class="card resource-card" data-type="modelpapers" href="#" role="button">
-            <i class="fa-solid fa-copy"></i>
-            <h3>Model Papers</h3>
-            <p>Curated model papers to prepare effectively.</p>
-          </a>
-          <a class="card resource-card" data-type="studyresources" href="#" role="button">
-            <i class="fa-solid fa-book-open-reader"></i>
-            <h3>Study Resources</h3>
-            <p>Tutorials, notes, and guided materials.</p>
-          </a>
-        </div>
-      </section>
+      </div>
     </section>
-  </main>
 
-  <!-- Footer (same as Home) -->
-  <footer>
+    <!-- Panel 2: Grades -->
+    <section id="panel-grades" class="panel">
+      <button class="link back-btn" data-back="subjects">Back to Subjects</button>
+      <h2>Choose Grade</h2>
+      <div class="grid grades-grid">
+        <button class="chip-btn grade-btn" data-grade="6">Grade 6</button>
+        <button class="chip-btn grade-btn" data-grade="7">Grade 7</button>
+        <button class="chip-btn grade-btn" data-grade="8">Grade 8</button>
+        <button class="chip-btn grade-btn" data-grade="9">Grade 9</button>
+        <button class="chip-btn grade-btn" data-grade="10">Grade 10</button>
+        <button class="chip-btn grade-btn" data-grade="11">Grade 11</button>
+      </div>
+    </section>
+
+    <!-- Panel 3: Year - DROPDOWN ONLY -->
+    <section id="panel-year" class="panel">
+      <button class="link back-btn" data-back="grades">Back to Grades</button>
+      <h2>Select Academic Year</h2>
+      
+      <div class="year-selection-container">
+        <p class="year-description">Choose the academic year for your study materials</p>
+        <div class="year-dropdown-wrapper">
+          <select id="year-select">
+            <option value="">Select Academic Year</option>
+            <option value="2025">2025 - Current Year</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+            <option value="2020">2020</option>
+            <option value="2019">2019</option>
+            <option value="2018">2018</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel 4: Resources -->
+    <section id="panel-resources" class="panel">
+      <button class="link back-btn" data-back="year">Back to Year</button>
+      <h2>Study Resources</h2>
+      <div class="grid resources-grid">
+        <a class="card resource-card" data-type="Past Papers" href="#">Past Papers</a>
+        <a class="card resource-card" data-type="Model Papers" href="#">Model Papers</a>
+        <a class="card resource-card" data-type="Study Resources" href="#">Study Resources</a>
+      </div>
+      <div id="materialsContainer"></div>
+    </section>
+  </section>
+</main>
+
+<footer>
   <p>&copy; 2025 EduNova Academy | All Rights Reserved</p>
   <div class="footer-middle">
     <span><i class="fas fa-map-marker-alt"></i> Embilipitiya, Sri Lanka</span> |
@@ -131,5 +408,45 @@
     <span><i class="fas fa-phone"></i> 0728561668 / 0711733650</span>
   </div>
 </footer>
+
+<script>
+// Enhanced functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const yearSelect = document.getElementById('year-select');
+
+  // Handle dropdown selection
+  yearSelect.addEventListener('change', function() {
+    if (this.value) {
+      document.getElementById('chosenYear').textContent = this.value;
+      document.querySelector('.year-chip').hidden = false;
+      // Auto-proceed to next step after a short delay
+      setTimeout(() => {
+        // Add your panel navigation logic here
+        console.log('Selected year:', this.value);
+      }, 300);
+    }
+  });
+
+  // Handle enhanced subject selection
+  document.querySelectorAll('.enhanced-subject').forEach(card => {
+    card.addEventListener('click', function() {
+      // Remove selected class from all subject cards
+      document.querySelectorAll('.enhanced-subject').forEach(c => c.classList.remove('selected'));
+      // Add selected class to clicked card
+      this.classList.add('selected');
+      
+      const selectedSubject = this.dataset.subject;
+      document.getElementById('chosenSubject').textContent = selectedSubject;
+      document.querySelector('.subject-chip').hidden = false;
+      
+      // Auto-proceed to next step after a short delay
+      setTimeout(() => {
+        console.log('Selected subject:', selectedSubject);
+        // Add your panel navigation logic here
+      }, 500);
+    });
+  });
+});
+</script>
 </body>
 </html>
