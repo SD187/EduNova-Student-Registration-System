@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us - EduNova Academy</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="logo-name">
+      <img src="/static/css/assets/logo.jpeg" alt="EduNova Logo" class="logo">
+      <span class="institution-name">EduNova</span>
+    </div>
+    <div class="nav-wrapper">
+      <nav>
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('about') }}" class="active">About Us</a>
+        <a href="{{ url_for('courses') }}">Courses</a>
+        <a href="{{ url_for('timetable') }}">Timetable</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
+        <a href="{{ url_for('admin_login') }}" class="admin-btn">Admin Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="about-hero">
+    <div class="hero-overlay">
+      <div class="hero-text">
+        <h1>About EduNova Academy</h1>
+        <p>EduNova Academy is the smart online platform that helps O/L students learn easily and effectively. We provide subject-wise lessons, interactive tools, and practice materials all in one place, anytime, anywhere.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats">
+    <div class="stat-card">
+      <i class="fa-solid fa-users"></i>
+      <h2 data-target="300">0</h2>
+      <p>Students</p>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-chalkboard-teacher"></i>
+      <h2 data-target="50">0</h2>
+      <p>Teachers</p>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-book-open"></i>
+      <h2 data-target="15">0</h2>
+      <p>Courses</p>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-calendar-days"></i>
+      <h2 data-target="10">0</h2>
+      <p>Years Experience</p>
+    </div>
+  </section>
+
+  <!-- What We Offer Section -->
+  <section class="offers">
+    <h2>What We Offer</h2>
+    <div class="offer-cards">
+      <div class="offer-card">
+        <i class="fa-solid fa-file-lines"></i>
+        <h3>Theory Lessons</h3>
+        <p>Comprehensive topic-wise lessons for better understanding.</p>
+      </div>
+      <div class="offer-card">
+        <i class="fa-solid fa-pen"></i>
+        <h3>Revision Tutes</h3>
+        <p>Quick revision notes for last-minute exam preparation.</p>
+      </div>
+      <div class="offer-card">
+        <i class="fa-solid fa-circle-check"></i>
+        <h3>MCQ Practice</h3>
+        <p>Interactive quizzes to test your knowledge instantly.</p>
+      </div>
+      <div class="offer-card">
+        <i class="fa-solid fa-file-signature"></i>
+        <h3>SAP Exams</h3>
+        <p>Simulated assessment papers for self-evaluation.</p>
+      </div>
+      <div class="offer-card">
+        <i class="fa-solid fa-book"></i>
+        <h3>Final Exam Papers</h3>
+        <p>Previous years' final exam papers for practice.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <h2>Join EduNova Today</h2>
+    <a href="{{ url_for('register') }}" class="register-btn">Register Now</a>
+  </section>
+
+  <!-- Footer -->
+  <!-- Footer -->
+<footer>
+  <p>&copy; 2025 EduNova Academy | All Rights Reserved</p>
+  <div class="footer-links">
+    <a href="{{ url_for('contact') }}">Contact Us</a>
+  </div>
+</footer>
+</body>
+</html>

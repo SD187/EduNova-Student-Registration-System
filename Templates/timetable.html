@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Timetable</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header>
+    <div class="logo-name">
+      <img src="/static/css/assets/logo.jpeg" alt="EduNova Logo" class="logo">
+      <span class="institution-name">EduNova</span>
+    </div>
+    <div class="nav-wrapper">
+      <nav>
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('about') }}">About Us</a>
+        <a href="{{ url_for('courses') }}">Courses</a>
+        <a href="{{ url_for('timetable') }}" class="active">Timetable</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
+        <a href="{{ url_for('admin_login') }}" class="admin-btn">Admin Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 🔹 Timetable Container -->
+  <div class="timetable-container">
+    <div class="timetable-header">
+      <h1 class="timetable-title">Our Time Table</h1>
+    </div>
+
+    <!-- Timetable Grid -->
+    <div class="timetable-wrapper">
+      <div class="schedule-grid">
+        <!-- Monday -->
+        <div class="day-column">
+          <div class="day-header">Monday</div>
+          <div class="subject-block mathematics">
+            <div class="subject-name">Mathematics</div>
+            <div class="time-slots">
+              <div class="time-slot">3:30 PM - 5:30 PM<span class="grade">Grade 6 & 7</span></div>
+              <div class="time-slot">6:00 PM - 8:00 PM<span class="grade">Grade 8 & 9</span></div>
+              <div class="time-slot">8:00 PM - 10:00 PM<span class="grade">Grade 10 & 11</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tuesday -->
+        <div class="day-column">
+          <div class="day-header">Tuesday</div>
+          <div class="subject-block science">
+            <div class="subject-name">Science</div>
+            <div class="time-slots">
+              <div class="time-slot">3:30 PM - 5:30 PM<span class="grade">Grade 6 & 7</span></div>
+              <div class="time-slot">6:00 PM - 8:00 PM<span class="grade">Grade 8 & 9</span></div>
+              <div class="time-slot">8:00 PM - 10:00 PM<span class="grade">Grade 10 & 11</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wednesday -->
+        <div class="day-column">
+          <div class="day-header">Wednesday</div>
+          <div class="subject-block sinhala">
+            <div class="subject-name">Sinhala</div>
+            <div class="time-slots">
+              <div class="time-slot">3:30 PM - 5:30 PM<span class="grade">Grade 6 & 7</span></div>
+              <div class="time-slot">6:00 PM - 8:00 PM<span class="grade">Grade 8 & 9</span></div>
+              <div class="time-slot">8:00 PM - 10:00 PM<span class="grade">Grade 10 & 11</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thursday -->
+        <div class="day-column">
+          <div class="day-header">Thursday</div>
+          <div class="subject-block english">
+            <div class="subject-name">English</div>
+            <div class="time-slots">
+              <div class="time-slot">3:30 PM - 5:30 PM<span class="grade">Grade 6 & 7</span></div>
+              <div class="time-slot">6:00 PM - 8:00 PM<span class="grade">Grade 8 & 9</span></div>
+              <div class="time-slot">8:00 PM - 10:00 PM<span class="grade">Grade 10 & 11</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Friday -->
+        <div class="day-column">
+          <div class="day-header">Friday</div>
+          <div class="subject-block history">
+            <div class="subject-name">History</div>
+            <div class="time-slots">
+              <div class="time-slot">3:30 PM - 5:30 PM<span class="grade">Grade 6 & 7</span></div>
+              <div class="time-slot">6:00 PM - 8:00 PM<span class="grade">Grade 8 & 9</span></div>
+              <div class="time-slot">8:00 PM - 10:00 PM<span class="grade">Grade 10 & 11</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saturday -->
+        <div class="day-column">
+          <div class="day-header">Saturday</div>
+          <div class="subject-block buddhism">
+            <div class="subject-name">Buddhism</div>
+            <div class="time-slots">
+              <div class="time-slot">3:30 PM - 5:30 PM<span class="grade">Grade 6 & 7</span></div>
+              <div class="time-slot">6:00 PM - 8:00 PM<span class="grade">Grade 8 & 9</span></div>
+              <div class="time-slot">8:00 PM - 10:00 PM<span class="grade">Grade 10 & 11</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ <footer>
+    <p>&copy; 2025 EduNova Academy | All Rights Reserved</p>
+    <div class="footer-links">
+      <a href="{{ url_for('contact') }}">Contact Us</a>
+    </div>
+  </footer>
+
+</body>
+</html>
