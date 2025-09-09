@@ -1,0 +1,27 @@
+{
+  "name": "edunova-student-registration-system",
+  "version": "1.0.0",
+  "description": "A student registration system built for EduNova Academy to simplify and automate the student enrollment process.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SD187/EduNova-Student-Registration-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SD187/EduNova-Student-Registration-System/issues"
+  },
+  "homepage": "https://github.com/SD187/EduNova-Student-Registration-System#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongoose": "^8.18.1"
+  }
+}
