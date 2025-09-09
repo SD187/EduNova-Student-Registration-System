@@ -98,13 +98,44 @@
   </footer>
 
   <script>
-    // Simple form submit alert
-    document.getElementById('feedbackForm').addEventListener('submit', function(e){
-      e.preventDefault();
-      alert("Thank you for your feedback!");
-      this.reset();
+    document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Get the form values
+        const name = this.querySelector('input[type="text"]').value;
+        const comment = this.querySelector('textarea').value;
+
+        // Create the data object to send
+        const formData = {
+            name: name,
+            comment: comment
+        };
+
+        try {
+            // Send the form data to your backend API
+            const response = await fetch('http://localhost:3000/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message); // Show a success message
+                this.reset(); // Reset the form
+                // You might want to reload testimonials here
+            } else {
+                alert("Error: " + result.message); // Show an error message
+            }
+        } catch (error) {
+            console.error('Submission error:', error);
+            alert("An unexpected error occurred. Please try again later.");
+        }
     });
-  </script>
+</script>
 
 </body>
 </html>
