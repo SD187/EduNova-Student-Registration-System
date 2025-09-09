@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Test - EduNova</title>
+    <link rel="stylesheet" href="/admin/css/Dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div style="padding: 20px; max-width: 800px; margin: 0 auto;">
+        <h1>Button State Test</h1>
+        <p>This page tests the button state management. Click the buttons and then use the reset button to test the functionality.</p>
+        
+        <div class="action-buttons" style="margin: 20px 0;">
+            <button class="btn orange" id="manageCoursesBtn">
+                <i class="fas fa-book"></i>
+                MANAGE COURSES
+            </button>
+            <button class="btn blue" id="manageStudentsBtn">
+                <i class="fas fa-user-graduate"></i>
+                MANAGE STUDENTS
+            </button>
+            <button class="btn green" id="manageFeedbackBtn">
+                <i class="fas fa-comments"></i>
+                MANAGE FEEDBACK
+            </button>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <button onclick="testButtonStates()" class="btn" style="background: #6c757d; color: white; margin-right: 10px;">
+                Test Button States
+            </button>
+            <button onclick="resetDashboardButtons()" class="btn" style="background: #28a745; color: white;">
+                Reset All Buttons
+            </button>
+        </div>
+        
+        <div id="testResults" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+            <h3>Test Results:</h3>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script src="/admin/js/dashboard.js"></script>
+    <script>
+        function testButtonStates() {
+            const results = document.getElementById('results');
+            const courseBtn = document.getElementById('manageCoursesBtn');
+            const studentBtn = document.getElementById('manageStudentsBtn');
+            const feedbackBtn = document.getElementById('manageFeedbackBtn');
+            
+            let html = '<ul>';
+            html += `<li>Course Button: ${courseBtn ? 'Found' : 'Not Found'} - Text: "${courseBtn ? courseBtn.innerHTML : 'N/A'}"</li>`;
+            html += `<li>Student Button: ${studentBtn ? 'Found' : 'Not Found'} - Text: "${studentBtn ? studentBtn.innerHTML : 'N/A'}"</li>`;
+            html += `<li>Feedback Button: ${feedbackBtn ? 'Found' : 'Not Found'} - Text: "${feedbackBtn ? feedbackBtn.innerHTML : 'N/A'}"</li>`;
+            html += '</ul>';
+            
+            results.innerHTML = html;
+        }
+        
+        // Test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                testButtonStates();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

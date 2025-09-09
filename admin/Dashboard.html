@@ -38,6 +38,10 @@
                     <i class="fas fa-calendar-alt"></i>
                     <span>Manage Time Table</span>
                 </a></li>
+                <li><a href="/admin/mfeedback.html" data-page="feedback">
+                    <i class="fas fa-comments"></i>
+                    <span>Manage Feedback</span>
+                </a></li>
                 <li><a href="/admin/settings.html" data-page="settings">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
@@ -107,6 +111,16 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Total Feedback</h4>
+                        <p id="totalFeedbackCount">-</p>
+                        <small>Student Reviews</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
                         <i class="fas fa-clock"></i>
                     </div>
                     <div class="stat-info">
@@ -145,13 +159,17 @@
             <section class="quick-actions">
                 <h3>Quick Actions</h3>
                 <div class="action-buttons">
-                    <button class="btn orange" onclick="manageCourses()">
+                    <button class="btn orange" id="manageCoursesBtn">
                         <i class="fas fa-book"></i>
                         MANAGE COURSES
                     </button>
-                    <button class="btn blue" onclick="manageStudents()">
-                        <i class="fas fa-users"></i>
+                    <button class="btn blue" id="manageStudentsBtn">
+                        <i class="fas fa-user-graduate"></i>
                         MANAGE STUDENTS
+                    </button>
+                    <button class="btn green" id="manageFeedbackBtn">
+                        <i class="fas fa-comments"></i>
+                        MANAGE FEEDBACK
                     </button>
                 </div>
             </section>

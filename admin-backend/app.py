@@ -42,6 +42,7 @@ teachers_collection = db.teachers
 registration_links_collection = db.registration_links
 course_resources_collection = db.course_resources
 timetable_collection = db.timetable_entries
+feedback_collection = db.feedback
 
 # JWT token required decorator
 def token_required(f):
@@ -747,8 +748,15 @@ def get_dashboard_stats(current_admin):
         total_teachers = teachers_collection.count_documents({'status': 'active'})
         total_admins = admins_collection.count_documents({'is_active': True})
         
+        # Get feedback statistics
+        total_feedbacks = feedback_collection.count_documents({})
+        pending_feedbacks = feedback_collection.count_documents({'status': 'pending'})
+        
         # Get recent activity (last 7 days)
         recent_students = students_collection.count_documents({
+            'created_at': {'$gte': datetime.utcnow() - timedelta(days=7)}
+        })
+        recent_feedbacks = feedback_collection.count_documents({
             'created_at': {'$gte': datetime.utcnow() - timedelta(days=7)}
         })
         
@@ -760,15 +768,24 @@ def get_dashboard_stats(current_admin):
         completed_students = students_collection.count_documents({'status': 'completed'})
         completion_rate = round((completed_students / max(total_enrolled, 1)) * 100, 1)
         
+        # Calculate average rating from feedback
+        avg_rating_result = list(feedback_collection.aggregate([
+            {'$group': {'_id': None, 'avg_rating': {'$avg': '$rating'}}}
+        ]))
+        avg_rating = round(avg_rating_result[0]['avg_rating'], 1) if avg_rating_result and avg_rating_result[0]['avg_rating'] else 4.8
+        
         stats = {
             'total_students': total_students,
             'total_courses': total_courses,
             'total_teachers': total_teachers,
             'total_admins': total_admins,
+            'total_feedbacks': total_feedbacks,
+            'pending_feedbacks': pending_feedbacks,
             'recent_registrations': recent_students,
+            'recent_feedbacks': recent_feedbacks,
             'pending_registrations': pending_registrations,
             'completion_rate': completion_rate,
-            'avg_rating': 4.8,  # This could be calculated from student feedback
+            'avg_rating': avg_rating,
             'last_login': current_admin.get('last_login', 'Never')
         }
         
@@ -1203,6 +1220,313 @@ def get_registration_link_history(current_admin):
                 link['updated_at'] = link['updated_at'].isoformat()
         
         return jsonify({'links': links}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Feedback Management Routes
+@app.route('/api/feedback', methods=['POST'])
+def create_feedback():
+    """Create new feedback (public endpoint - no authentication required)"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'email', 'message']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'message': f'{field} is required'}), 400
+        
+        # Validate email format
+        import re
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, data['email']):
+            return jsonify({'message': 'Invalid email format'}), 400
+        
+        # Create feedback document
+        feedback_data = {
+            'name': data['name'].strip(),
+            'email': data['email'].strip().lower(),
+            'message': data['message'].strip(),
+            'rating': data.get('rating', 5),
+            'feedback_type': data.get('feedback_type', 'general'),
+            'student_id': data.get('student_id'),
+            'is_anonymous': data.get('is_anonymous', False),
+            'status': 'pending',
+            'admin_response': None,
+            'responded_at': None,
+            'created_at': datetime.utcnow(),
+            'updated_at': datetime.utcnow()
+        }
+        
+        # Insert feedback
+        result = feedback_collection.insert_one(feedback_data)
+        
+        return jsonify({
+            'message': 'Feedback submitted successfully',
+            'feedback_id': str(result.inserted_id)
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/feedback', methods=['GET'])
+def get_feedbacks():
+    """Get feedbacks (public endpoint - returns only approved feedbacks)"""
+    try:
+        # Get query parameters
+        limit = int(request.args.get('limit', 10))
+        feedback_type = request.args.get('type')
+        rating = request.args.get('rating')
+        
+        # Build query
+        query = {'status': {'$in': ['reviewed', 'resolved']}}  # Only show approved feedbacks
+        
+        if feedback_type:
+            query['feedback_type'] = feedback_type
+        if rating:
+            query['rating'] = int(rating)
+        
+        # Get feedbacks
+        feedbacks = list(feedback_collection.find(query)
+                        .sort('created_at', -1)
+                        .limit(limit))
+        
+        # Convert ObjectId to string and format response
+        for feedback in feedbacks:
+            feedback['_id'] = str(feedback['_id'])
+            feedback['created_at'] = feedback['created_at'].isoformat()
+            if feedback.get('responded_at'):
+                feedback['responded_at'] = feedback['responded_at'].isoformat()
+        
+        return jsonify({'feedbacks': feedbacks}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+# Admin Feedback Management Routes
+@app.route('/api/admin/feedback', methods=['GET'])
+@token_required
+def get_all_feedbacks(current_admin):
+    """Get all feedbacks for admin (with pagination and filtering)"""
+    try:
+        # Get query parameters
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 20))
+        status = request.args.get('status')
+        feedback_type = request.args.get('type')
+        search = request.args.get('search', '')
+        
+        # Build query
+        query = {}
+        if status:
+            query['status'] = status
+        if feedback_type:
+            query['feedback_type'] = feedback_type
+        if search:
+            query['$or'] = [
+                {'name': {'$regex': search, '$options': 'i'}},
+                {'email': {'$regex': search, '$options': 'i'}},
+                {'message': {'$regex': search, '$options': 'i'}}
+            ]
+        
+        # Get total count
+        total = feedback_collection.count_documents(query)
+        
+        # Get feedbacks with pagination
+        feedbacks = list(feedback_collection.find(query)
+                        .skip((page - 1) * limit)
+                        .limit(limit)
+                        .sort('created_at', -1))
+        
+        # Convert ObjectId to string
+        for feedback in feedbacks:
+            feedback['_id'] = str(feedback['_id'])
+            feedback['created_at'] = feedback['created_at'].isoformat()
+            if feedback.get('updated_at'):
+                feedback['updated_at'] = feedback['updated_at'].isoformat()
+            if feedback.get('responded_at'):
+                feedback['responded_at'] = feedback['responded_at'].isoformat()
+        
+        return jsonify({
+            'feedbacks': feedbacks,
+            'total': total,
+            'page': page,
+            'pages': (total + limit - 1) // limit
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/admin/feedback/<feedback_id>', methods=['GET'])
+@token_required
+def get_feedback(current_admin, feedback_id):
+    """Get specific feedback by ID"""
+    try:
+        feedback = feedback_collection.find_one({'_id': ObjectId(feedback_id)})
+        
+        if not feedback:
+            return jsonify({'message': 'Feedback not found'}), 404
+        
+        feedback['_id'] = str(feedback['_id'])
+        feedback['created_at'] = feedback['created_at'].isoformat()
+        if feedback.get('updated_at'):
+            feedback['updated_at'] = feedback['updated_at'].isoformat()
+        if feedback.get('responded_at'):
+            feedback['responded_at'] = feedback['responded_at'].isoformat()
+        
+        return jsonify({'feedback': feedback}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/admin/feedback/<feedback_id>', methods=['PUT'])
+@token_required
+def update_feedback(current_admin, feedback_id):
+    """Update feedback status and admin response"""
+    try:
+        data = request.get_json()
+        
+        # Validate status if provided
+        if 'status' in data and data['status'] not in ['pending', 'reviewed', 'resolved', 'archived']:
+            return jsonify({'message': 'Invalid status'}), 400
+        
+        # Prepare update data
+        update_data = {}
+        if 'status' in data:
+            update_data['status'] = data['status']
+        if 'admin_response' in data:
+            update_data['admin_response'] = data['admin_response']
+            update_data['responded_at'] = datetime.utcnow()
+        
+        update_data['updated_at'] = datetime.utcnow()
+        update_data['updated_by'] = str(current_admin['_id'])
+        
+        # Update feedback
+        result = feedback_collection.update_one(
+            {'_id': ObjectId(feedback_id)},
+            {'$set': update_data}
+        )
+        
+        if result.matched_count == 0:
+            return jsonify({'message': 'Feedback not found'}), 404
+        
+        return jsonify({'message': 'Feedback updated successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/admin/feedback/<feedback_id>', methods=['DELETE'])
+@token_required
+def delete_feedback(current_admin, feedback_id):
+    """Delete feedback"""
+    try:
+        result = feedback_collection.delete_one({'_id': ObjectId(feedback_id)})
+        
+        if result.deleted_count == 0:
+            return jsonify({'message': 'Feedback not found'}), 404
+        
+        return jsonify({'message': 'Feedback deleted successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/admin/feedback/bulk-action', methods=['POST'])
+@token_required
+def bulk_feedback_action(current_admin):
+    """Perform bulk actions on feedbacks"""
+    try:
+        data = request.get_json()
+        action = data.get('action')
+        feedback_ids = data.get('feedback_ids', [])
+        
+        if not action or not feedback_ids:
+            return jsonify({'message': 'Action and feedback IDs are required'}), 400
+        
+        # Convert string IDs to ObjectIds
+        object_ids = [ObjectId(fid) for fid in feedback_ids]
+        
+        if action == 'mark_reviewed':
+            result = feedback_collection.update_many(
+                {'_id': {'$in': object_ids}},
+                {'$set': {
+                    'status': 'reviewed',
+                    'updated_at': datetime.utcnow(),
+                    'updated_by': str(current_admin['_id'])
+                }}
+            )
+        elif action == 'mark_resolved':
+            result = feedback_collection.update_many(
+                {'_id': {'$in': object_ids}},
+                {'$set': {
+                    'status': 'resolved',
+                    'updated_at': datetime.utcnow(),
+                    'updated_by': str(current_admin['_id'])
+                }}
+            )
+        elif action == 'archive':
+            result = feedback_collection.update_many(
+                {'_id': {'$in': object_ids}},
+                {'$set': {
+                    'status': 'archived',
+                    'updated_at': datetime.utcnow(),
+                    'updated_by': str(current_admin['_id'])
+                }}
+            )
+        elif action == 'delete':
+            result = feedback_collection.delete_many({'_id': {'$in': object_ids}})
+        else:
+            return jsonify({'message': 'Invalid action'}), 400
+        
+        return jsonify({
+            'message': f'Bulk action completed successfully',
+            'modified_count': result.modified_count if hasattr(result, 'modified_count') else result.deleted_count
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/admin/feedback/stats', methods=['GET'])
+@token_required
+def get_feedback_stats(current_admin):
+    """Get feedback statistics for admin dashboard"""
+    try:
+        # Get total counts by status
+        total_feedbacks = feedback_collection.count_documents({})
+        pending_feedbacks = feedback_collection.count_documents({'status': 'pending'})
+        reviewed_feedbacks = feedback_collection.count_documents({'status': 'reviewed'})
+        resolved_feedbacks = feedback_collection.count_documents({'status': 'resolved'})
+        archived_feedbacks = feedback_collection.count_documents({'status': 'archived'})
+        
+        # Get counts by feedback type
+        feedback_types = list(feedback_collection.aggregate([
+            {'$group': {'_id': '$feedback_type', 'count': {'$sum': 1}}},
+            {'$sort': {'count': -1}}
+        ]))
+        
+        # Get average rating
+        avg_rating_result = list(feedback_collection.aggregate([
+            {'$group': {'_id': None, 'avg_rating': {'$avg': '$rating'}}}
+        ]))
+        avg_rating = avg_rating_result[0]['avg_rating'] if avg_rating_result else 0
+        
+        # Get recent feedbacks (last 7 days)
+        recent_feedbacks = feedback_collection.count_documents({
+            'created_at': {'$gte': datetime.utcnow() - timedelta(days=7)}
+        })
+        
+        stats = {
+            'total_feedbacks': total_feedbacks,
+            'pending_feedbacks': pending_feedbacks,
+            'reviewed_feedbacks': reviewed_feedbacks,
+            'resolved_feedbacks': resolved_feedbacks,
+            'archived_feedbacks': archived_feedbacks,
+            'recent_feedbacks': recent_feedbacks,
+            'avg_rating': round(avg_rating, 1),
+            'feedback_types': feedback_types
+        }
+        
+        return jsonify({'stats': stats}), 200
         
     except Exception as e:
         return jsonify({'message': f'Error: {str(e)}'}), 500

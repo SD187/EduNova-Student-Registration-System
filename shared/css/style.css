@@ -1135,3 +1135,160 @@ footer p {
     height: auto; 
   }
 }
+
+/* Enhanced Feedback Form Styles */
+#feedback-page .feedback-form select {
+  width: 100%;
+  padding: 12px 15px;
+  margin: 10px 0 20px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+#feedback-page .rating-container {
+  margin: 15px 0 20px 0;
+}
+
+#feedback-page .rating-container label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+#feedback-page .star-rating {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+#feedback-page .star-rating input[type="radio"] {
+  display: none;
+}
+
+#feedback-page .star-rating label {
+  font-size: 2rem;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  margin: 0;
+  padding: 0;
+}
+
+#feedback-page .star-rating label:hover,
+#feedback-page .star-rating label:hover ~ label,
+#feedback-page .star-rating input[type="radio"]:checked ~ label {
+  color: #f1c40f;
+}
+
+#feedback-page .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 15px 0 20px 0;
+  font-size: 0.95rem;
+  color: #2c3e50;
+  cursor: pointer;
+}
+
+#feedback-page .checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Feedback Display Styles */
+#feedback-page .feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#feedback-page .feedback-rating {
+  color: #f1c40f;
+  font-size: 1.2rem;
+}
+
+#feedback-page .feedback-type {
+  background: #e8f4f8;
+  color: #0d3b66;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+#feedback-page .feedback-date {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 8px;
+  text-align: right;
+}
+
+#feedback-page .no-feedback {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+}
+
+#feedback-page .success-message {
+  background: #d4edda;
+  color: #155724;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #c3e6cb;
+  font-weight: 600;
+}
+
+#feedback-page .error-message {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #f5c6cb;
+  font-weight: 600;
+}
+
+/* Form validation styles */
+#feedback-page .feedback-form input:invalid,
+#feedback-page .feedback-form textarea:invalid,
+#feedback-page .feedback-form select:invalid {
+  border-color: #dc3545;
+}
+
+#feedback-page .feedback-form input:valid,
+#feedback-page .feedback-form textarea:valid,
+#feedback-page .feedback-form select:valid {
+  border-color: #28a745;
+}
+
+/* Loading state for submit button */
+#feedback-page .feedback-form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Enhanced testimonial styles for dynamic feedback */
+#feedback-page .testimonial.dynamic {
+  border-left: 4px solid #f1c40f;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  transition: all 0.3s ease;
+}
+
+#feedback-page .testimonial.dynamic:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  border-left-color: #0d3b66;
+}

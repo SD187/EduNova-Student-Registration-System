@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNova - Feedback Management</title>
+    <link rel="stylesheet" href="css/Dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .feedback-container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .feedback-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 2rem;
+        }
+        
+        .stat-card p {
+            margin: 0;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filters select, .filters input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .feedback-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            background: #0d3b66;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-content {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-reviewed { background: #d1ecf1; color: #0c5460; }
+        .status-resolved { background: #d4edda; color: #155724; }
+        .status-archived { background: #f8d7da; color: #721c24; }
+        
+        .rating-stars {
+            color: #f1c40f;
+            font-size: 1.2rem;
+        }
+        
+        .feedback-type {
+            background: #e8f4f8;
+            color: #0d3b66;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-danger { background: #dc3545; color: white; }
+        
+        .btn:hover {
+            opacity: 0.8;
+            transform: translateY(-1px);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: #f8f9fa;
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .bulk-actions select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .bulk-actions button {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .bulk-actions button:hover {
+            background: #5a6268;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="feedback-container">
+        <div class="feedback-header">
+            <h1><i class="fas fa-comments"></i> Feedback Management</h1>
+            <div class="bulk-actions">
+                <select id="bulkAction">
+                    <option value="">Bulk Actions</option>
+                    <option value="mark_reviewed">Mark as Reviewed</option>
+                    <option value="mark_resolved">Mark as Resolved</option>
+                    <option value="archive">Archive</option>
+                    <option value="delete">Delete</option>
+                </select>
+                <button onclick="performBulkAction()">Apply</button>
+            </div>
+        </div>
+        
+        <div class="feedback-stats" id="feedbackStats">
+            <div class="stat-card">
+                <h3 id="totalFeedbacks">-</h3>
+                <p>Total Feedbacks</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="pendingFeedbacks">-</h3>
+                <p>Pending</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="reviewedFeedbacks">-</h3>
+                <p>Reviewed</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="resolvedFeedbacks">-</h3>
+                <p>Resolved</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="avgRating">-</h3>
+                <p>Average Rating</p>
+            </div>
+        </div>
+        
+        <div class="filters">
+            <select id="statusFilter">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="resolved">Resolved</option>
+                <option value="archived">Archived</option>
+            </select>
+            <select id="typeFilter">
+                <option value="">All Types</option>
+                <option value="general">General</option>
+                <option value="course">Course</option>
+                <option value="teacher">Teacher</option>
+                <option value="facility">Facility</option>
+                <option value="suggestion">Suggestion</option>
+                <option value="complaint">Complaint</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Search feedbacks...">
+            <button class="btn btn-primary" onclick="loadFeedbacks()">Filter</button>
+        </div>
+        
+        <div class="feedback-table">
+            <div class="table-header">
+                <h3>Feedbacks</h3>
+                <div>
+                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                    <label for="selectAll">Select All</label>
+                </div>
+            </div>
+            <div class="table-content">
+                <div id="loadingIndicator" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading feedbacks...
+                </div>
+                <table id="feedbackTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Type</th>
+                            <th>Rating</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feedbackTableBody">
+                    </tbody>
+                </table>
+                <div id="noDataMessage" class="no-data" style="display: none;">
+                    No feedbacks found.
+                </div>
+            </div>
+        </div>
+        
+        <div class="pagination" id="pagination">
+        </div>
+    </div>
+    
+    <!-- Feedback Detail Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Feedback Details</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalBody">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let allFeedbacks = [];
+        let selectedFeedbacks = new Set();
+        
+        // Load feedbacks on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFeedbackStats();
+            loadFeedbacks();
+        });
+        
+        // Load feedback statistics
+        async function loadFeedbackStats() {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch('/api/admin/feedback/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const stats = data.stats;
+                    
+                    document.getElementById('totalFeedbacks').textContent = stats.total_feedbacks;
+                    document.getElementById('pendingFeedbacks').textContent = stats.pending_feedbacks;
+                    document.getElementById('reviewedFeedbacks').textContent = stats.reviewed_feedbacks;
+                    document.getElementById('resolvedFeedbacks').textContent = stats.resolved_feedbacks;
+                    document.getElementById('avgRating').textContent = stats.avg_rating;
+                }
+            } catch (error) {
+                console.error('Error loading feedback stats:', error);
+            }
+        }
+        
+        // Load feedbacks
+        async function loadFeedbacks() {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const status = document.getElementById('statusFilter').value;
+                const type = document.getElementById('typeFilter').value;
+                const search = document.getElementById('searchInput').value;
+                
+                let url = `/api/admin/feedback?page=${currentPage}&limit=20`;
+                if (status) url += `&status=${status}`;
+                if (type) url += `&type=${type}`;
+                if (search) url += `&search=${search}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allFeedbacks = data.feedbacks;
+                    totalPages = data.pages;
+                    
+                    displayFeedbacks();
+                    updatePagination();
+                } else {
+                    throw new Error('Failed to load feedbacks');
+                }
+            } catch (error) {
+                console.error('Error loading feedbacks:', error);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('noDataMessage').style.display = 'block';
+            }
+        }
+        
+        // Display feedbacks in table
+        function displayFeedbacks() {
+            const tbody = document.getElementById('feedbackTableBody');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const table = document.getElementById('feedbackTable');
+            const noDataMessage = document.getElementById('noDataMessage');
+            
+            loadingIndicator.style.display = 'none';
+            
+            if (allFeedbacks.length === 0) {
+                table.style.display = 'none';
+                noDataMessage.style.display = 'block';
+                return;
+            }
+            
+            table.style.display = 'table';
+            noDataMessage.style.display = 'none';
+            
+            tbody.innerHTML = '';
+            
+            allFeedbacks.forEach(feedback => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="feedback-checkbox" value="${feedback._id}" 
+                               onchange="toggleFeedbackSelection('${feedback._id}')">
+                    </td>
+                    <td>${feedback.is_anonymous ? 'Anonymous' : feedback.name}</td>
+                    <td>${feedback.email}</td>
+                    <td><span class="feedback-type">${feedback.feedback_type}</span></td>
+                    <td><span class="rating-stars">${'★'.repeat(feedback.rating)}${'☆'.repeat(5 - feedback.rating)}</span></td>
+                    <td>${feedback.message.length > 50 ? feedback.message.substring(0, 50) + '...' : feedback.message}</td>
+                    <td><span class="status-badge status-${feedback.status}">${feedback.status}</span></td>
+                    <td>${new Date(feedback.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="viewFeedback('${feedback._id}')">View</button>
+                            <button class="btn btn-success" onclick="updateFeedbackStatus('${feedback._id}', 'reviewed')">Review</button>
+                            <button class="btn btn-warning" onclick="updateFeedbackStatus('${feedback._id}', 'resolved')">Resolve</button>
+                            <button class="btn btn-danger" onclick="deleteFeedback('${feedback._id}')">Delete</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Update pagination
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Previous';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadFeedbacks();
+                }
+            };
+            pagination.appendChild(prevBtn);
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = currentPage === i ? 'active' : '';
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    loadFeedbacks();
+                };
+                pagination.appendChild(pageBtn);
+            }
+            
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadFeedbacks();
+                }
+            };
+            pagination.appendChild(nextBtn);
+        }
+        
+        // Toggle select all
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.feedback-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedFeedbacks.add(checkbox.value);
+                } else {
+                    selectedFeedbacks.delete(checkbox.value);
+                }
+            });
+        }
+        
+        // Toggle individual feedback selection
+        function toggleFeedbackSelection(feedbackId) {
+            if (selectedFeedbacks.has(feedbackId)) {
+                selectedFeedbacks.delete(feedbackId);
+            } else {
+                selectedFeedbacks.add(feedbackId);
+            }
+        }
+        
+        // Perform bulk action
+        async function performBulkAction() {
+            const action = document.getElementById('bulkAction').value;
+            if (!action || selectedFeedbacks.size === 0) {
+                alert('Please select an action and at least one feedback.');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to ${action.replace('_', ' ')} ${selectedFeedbacks.size} feedback(s)?`)) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch('/api/admin/feedback/bulk-action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        feedback_ids: Array.from(selectedFeedbacks)
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Bulk action completed successfully!');
+                    selectedFeedbacks.clear();
+                    document.getElementById('selectAll').checked = false;
+                    loadFeedbackStats();
+                    loadFeedbacks();
+                } else {
+                    throw new Error('Bulk action failed');
+                }
+            } catch (error) {
+                console.error('Error performing bulk action:', error);
+                alert('Failed to perform bulk action. Please try again.');
+            }
+        }
+        
+        // View feedback details
+        async function viewFeedback(feedbackId) {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/admin/feedback/${feedbackId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const feedback = data.feedback;
+                    
+                    document.getElementById('modalBody').innerHTML = `
+                        <div class="form-group">
+                            <label>Name:</label>
+                            <input type="text" value="${feedback.is_anonymous ? 'Anonymous' : feedback.name}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" value="${feedback.email}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Type:</label>
+                            <input type="text" value="${feedback.feedback_type}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Rating:</label>
+                            <input type="text" value="${feedback.rating}/5" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Status:</label>
+                            <select id="modalStatus">
+                                <option value="pending" ${feedback.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="reviewed" ${feedback.status === 'reviewed' ? 'selected' : ''}>Reviewed</option>
+                                <option value="resolved" ${feedback.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                                <option value="archived" ${feedback.status === 'archived' ? 'selected' : ''}>Archived</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Message:</label>
+                            <textarea readonly>${feedback.message}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Admin Response:</label>
+                            <textarea id="adminResponse" placeholder="Enter admin response...">${feedback.admin_response || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Created:</label>
+                            <input type="text" value="${new Date(feedback.created_at).toLocaleString()}" readonly>
+                        </div>
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button class="btn btn-primary" onclick="saveFeedbackChanges('${feedback._id}')">Save Changes</button>
+                            <button class="btn" onclick="closeModal()" style="background: #6c757d; color: white;">Cancel</button>
+                        </div>
+                    `;
+                    
+                    document.getElementById('feedbackModal').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading feedback details:', error);
+                alert('Failed to load feedback details.');
+            }
+        }
+        
+        // Save feedback changes
+        async function saveFeedbackChanges(feedbackId) {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const status = document.getElementById('modalStatus').value;
+                const adminResponse = document.getElementById('adminResponse').value;
+                
+                const response = await fetch(`/api/admin/feedback/${feedbackId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        status: status,
+                        admin_response: adminResponse
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Feedback updated successfully!');
+                    closeModal();
+                    loadFeedbackStats();
+                    loadFeedbacks();
+                } else {
+                    throw new Error('Failed to update feedback');
+                }
+            } catch (error) {
+                console.error('Error updating feedback:', error);
+                alert('Failed to update feedback. Please try again.');
+            }
+        }
+        
+        // Update feedback status
+        async function updateFeedbackStatus(feedbackId, status) {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/admin/feedback/${feedbackId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: status })
+                });
+                
+                if (response.ok) {
+                    alert('Feedback status updated successfully!');
+                    loadFeedbackStats();
+                    loadFeedbacks();
+                } else {
+                    throw new Error('Failed to update feedback status');
+                }
+            } catch (error) {
+                console.error('Error updating feedback status:', error);
+                alert('Failed to update feedback status. Please try again.');
+            }
+        }
+        
+        // Delete feedback
+        async function deleteFeedback(feedbackId) {
+            if (!confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/admin/feedback/${feedbackId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('Feedback deleted successfully!');
+                    loadFeedbackStats();
+                    loadFeedbacks();
+                } else {
+                    throw new Error('Failed to delete feedback');
+                }
+            } catch (error) {
+                console.error('Error deleting feedback:', error);
+                alert('Failed to delete feedback. Please try again.');
+            }
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('feedbackModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('feedbackModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

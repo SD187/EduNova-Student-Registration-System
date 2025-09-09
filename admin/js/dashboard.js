@@ -13,11 +13,28 @@ function initializeDashboard() {
     // Add welcome message
     console.log('EduNova Admin Dashboard Loaded');
     
+    // Immediately reset all button states
+    resetAllButtonStates();
+    
     // Update last login time
     updateLastLoginTime();
     
     // Start real-time updates
     startRealTimeUpdates();
+    
+    // Setup quick action buttons
+    setupQuickActionButtons();
+    
+    // Set active navigation based on current page
+    setActiveNavigation();
+    
+    // Setup page visibility change listener
+    setupPageVisibilityListener();
+    
+    // Additional reset after a short delay to ensure buttons are reset
+    setTimeout(() => {
+        resetAllButtonStates();
+    }, 100);
 }
 
 // Setup navigation functionality
@@ -70,6 +87,7 @@ function updatePageTitle(page) {
         'teachers': 'Manage Teachers',
         'courses': 'Manage Courses',
         'timetable': 'Manage Time Table',
+        'feedback': 'Manage Feedback',
         'settings': 'Settings'
     };
     
@@ -96,6 +114,9 @@ function loadPageContent(page) {
             break;
         case 'timetable':
             showNotification('Loading Time Table Management...', 'info');
+            break;
+        case 'feedback':
+            showNotification('Loading Feedback Management...', 'info');
             break;
         case 'settings':
             showNotification('Loading Settings...', 'info');
@@ -200,8 +221,14 @@ function updateStatCards(stats) {
         coursesCard.textContent = stats.total_courses + ' +';
     }
     
+    // Update total feedback
+    const feedbackCard = document.getElementById('totalFeedbackCount');
+    if (feedbackCard) {
+        feedbackCard.textContent = stats.total_feedbacks || 0;
+    }
+    
     // Update last login
-    const lastLoginCard = document.querySelector('.stat-card:nth-child(4) .stat-info p');
+    const lastLoginCard = document.querySelector('.stat-card:nth-child(5) .stat-info p');
     if (lastLoginCard) {
         lastLoginCard.textContent = stats.last_login;
     }
@@ -382,93 +409,251 @@ function updateStats() {
     }
 }
 
-// Quick action functions with backend integration
+// Quick action functions with improved navigation and button state management
 async function manageCourses() {
+    console.log('manageCourses called');
+    const button = event.target;
+    const originalText = button.innerHTML;
+    console.log('Button found:', button, 'Original text:', originalText);
+    
     try {
         showNotification('Opening Course Management...', 'info');
         
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        // Check authentication
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('adminToken');
         
         if (!token) {
             showNotification('Please login to access course management', 'error');
+            // Redirect to login page
+            setTimeout(() => {
+                window.location.href = 'adminlogin.html';
+            }, 2000);
             return;
         }
         
-        // Call backend quick action API
-        const response = await fetch('http://127.0.0.1:5000/api/dashboard/quick-actions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ action: 'manage_courses' })
-        });
+        // Show loading animation
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening...';
+        button.disabled = true;
         
-        if (response.ok) {
-            const data = await response.json();
-            showNotification(data.message, 'success');
+        // Try backend API call (optional)
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/dashboard/quick-actions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: 'manage_courses' })
+            });
             
-            // Redirect to course management page
-            setTimeout(() => {
-                window.location.href = 'mcources.html';
-            }, 1000);
-        } else {
-            showNotification('Failed to open course management', 'error');
+            if (response.ok) {
+                const data = await response.json();
+                showNotification(data.message, 'success');
+            }
+        } catch (apiError) {
+            console.log('API call failed, using direct navigation');
         }
+        
+        // Navigate to course management page
+        setTimeout(() => {
+            window.location.href = 'Mcources.html';
+        }, 800);
+        
+        // Safety timeout to reset button state (in case navigation fails)
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }, 5000);
         
     } catch (error) {
         console.error('Error opening course management:', error);
-        showNotification('Error opening course management', 'error');
+        showNotification('Opening Course Management...', 'info');
+        
+        // Reset button state on error
+        button.innerHTML = originalText;
+        button.disabled = false;
         
         // Fallback redirect
         setTimeout(() => {
-            window.location.href = 'mcources.html';
+            window.location.href = 'Mcources.html';
         }, 1000);
     }
 }
 
 async function manageStudents() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
     try {
         showNotification('Opening Student Management...', 'info');
         
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        // Check authentication
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('adminToken');
         
         if (!token) {
             showNotification('Please login to access student management', 'error');
+            // Redirect to login page
+            setTimeout(() => {
+                window.location.href = 'adminlogin.html';
+            }, 2000);
             return;
         }
         
-        // Call backend quick action API
-        const response = await fetch('http://127.0.0.1:5000/api/dashboard/quick-actions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ action: 'manage_students' })
-        });
+        // Show loading animation
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening...';
+        button.disabled = true;
         
-        if (response.ok) {
-            const data = await response.json();
-            showNotification(data.message, 'success');
+        // Try backend API call (optional)
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/dashboard/quick-actions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: 'manage_students' })
+            });
             
-            // Redirect to student management page
-            setTimeout(() => {
-                window.location.href = 'mstudent.html';
-            }, 1000);
-        } else {
-            showNotification('Failed to open student management', 'error');
+            if (response.ok) {
+                const data = await response.json();
+                showNotification(data.message, 'success');
+            }
+        } catch (apiError) {
+            console.log('API call failed, using direct navigation');
         }
+        
+        // Navigate to student management page
+        setTimeout(() => {
+            window.location.href = 'mstudent.html';
+        }, 800);
+        
+        // Safety timeout to reset button state (in case navigation fails)
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }, 5000);
         
     } catch (error) {
         console.error('Error opening student management:', error);
-        showNotification('Error opening student management', 'error');
+        showNotification('Opening Student Management...', 'info');
+        
+        // Reset button state on error
+        button.innerHTML = originalText;
+        button.disabled = false;
         
         // Fallback redirect
         setTimeout(() => {
             window.location.href = 'mstudent.html';
         }, 1000);
     }
+}
+
+// Manage feedback function
+async function manageFeedback() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    try {
+        showNotification('Opening Feedback Management...', 'info');
+        
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('adminToken');
+        
+        if (!token) {
+            showNotification('Please login to access feedback management', 'error');
+            // Redirect to login page
+            setTimeout(() => {
+                window.location.href = 'adminlogin.html';
+            }, 2000);
+            return;
+        }
+        
+        // Show loading animation
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening...';
+        button.disabled = true;
+        
+        // Redirect to feedback management page
+        setTimeout(() => {
+            window.location.href = 'mfeedback.html';
+        }, 800);
+        
+        // Safety timeout to reset button state (in case navigation fails)
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }, 5000);
+        
+    } catch (error) {
+        console.error('Error opening feedback management:', error);
+        showNotification('Error opening feedback management', 'error');
+        
+        // Reset button state on error
+        button.innerHTML = originalText;
+        button.disabled = false;
+        
+        // Fallback redirect
+        setTimeout(() => {
+            window.location.href = 'mfeedback.html';
+        }, 1000);
+    }
+}
+
+// Show notification function
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    // Add styles
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1'};
+        color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460'};
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+        max-width: 400px;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
 }
 
 // Logout function
@@ -486,7 +671,7 @@ function logout() {
         }, 1000);
     }
 }
-// Dashboard Navigation - Add this to your dashboard.js
+// Enhanced Dashboard Navigation
 document.addEventListener('DOMContentLoaded', function() {
     // Get all sidebar navigation links
     const navLinks = document.querySelectorAll('nav ul li a[data-page]');
@@ -497,32 +682,157 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const page = this.getAttribute('data-page');
+            const currentPage = window.location.pathname.split('/').pop();
+            
+            // Don't navigate if already on the same page
+            if (currentPage === getPageFileName(page)) {
+                return;
+            }
+            
+            // Show loading notification
+            showNotification(`Navigating to ${getPageTitle(page)}...`, 'info');
             
             // Navigate based on data-page attribute
-            switch(page) {
-                case 'students':
-                    window.location.href = 'mstudent.html';
-                    break;
-                case 'teachers':
-                    window.location.href = 'mteachers.html';
-                    break;
-                case 'courses':
-                    window.location.href = 'mcources.html';
-                    break;
-                case 'timetable':
-                    window.location.href = 'mtime.html';
-                    break;
-                case 'settings':
-                    window.location.href = 'settings.html';
-                    break;
-                case 'dashboard':
-                    // Stay on current page or reload
-                    window.location.href = 'Dashboard.html';
-                    break;
-            }
+            setTimeout(() => {
+                window.location.href = getPageFileName(page);
+            }, 300);
         });
     });
 });
+
+// Helper function to get page file name
+function getPageFileName(page) {
+    const pageMap = {
+        'dashboard': 'Dashboard.html',
+        'students': 'mstudent.html',
+        'teachers': 'mteachers.html',
+        'courses': 'Mcources.html',
+        'timetable': 'mtime.html',
+        'feedback': 'mfeedback.html',
+        'settings': 'settings.html'
+    };
+    return pageMap[page] || 'Dashboard.html';
+}
+
+// Helper function to get page title
+function getPageTitle(page) {
+    const titleMap = {
+        'dashboard': 'Dashboard',
+        'students': 'Student Management',
+        'teachers': 'Teacher Management',
+        'courses': 'Course Management',
+        'timetable': 'Timetable Management',
+        'feedback': 'Feedback Management',
+        'settings': 'Settings'
+    };
+    return titleMap[page] || 'Dashboard';
+}
+
+// Setup quick action buttons
+function setupQuickActionButtons() {
+    // Reset all button states first
+    resetAllButtonStates();
+    
+    // Add click handlers to quick action buttons using IDs
+    const courseBtn = document.getElementById('manageCoursesBtn');
+    const studentBtn = document.getElementById('manageStudentsBtn');
+    const feedbackBtn = document.getElementById('manageFeedbackBtn');
+    
+    if (courseBtn) {
+        courseBtn.addEventListener('click', manageCourses);
+    }
+    
+    if (studentBtn) {
+        studentBtn.addEventListener('click', manageStudents);
+    }
+    
+    if (feedbackBtn) {
+        feedbackBtn.addEventListener('click', manageFeedback);
+    }
+}
+
+// Reset all button states to normal
+function resetAllButtonStates() {
+    console.log('resetAllButtonStates called');
+    // Reset each button by ID for more reliability
+    const courseBtn = document.getElementById('manageCoursesBtn');
+    const studentBtn = document.getElementById('manageStudentsBtn');
+    const feedbackBtn = document.getElementById('manageFeedbackBtn');
+    
+    console.log('Buttons found:', { courseBtn, studentBtn, feedbackBtn });
+    
+    if (courseBtn) {
+        courseBtn.disabled = false;
+        courseBtn.innerHTML = '<i class="fas fa-book"></i> MANAGE COURSES';
+        console.log('Course button reset');
+    }
+    
+    if (studentBtn) {
+        studentBtn.disabled = false;
+        studentBtn.innerHTML = '<i class="fas fa-user-graduate"></i> MANAGE STUDENTS';
+        console.log('Student button reset');
+    }
+    
+    if (feedbackBtn) {
+        feedbackBtn.disabled = false;
+        feedbackBtn.innerHTML = '<i class="fas fa-comments"></i> MANAGE FEEDBACK';
+        console.log('Feedback button reset');
+    }
+}
+
+// Setup page visibility change listener
+function setupPageVisibilityListener() {
+    // Reset button states when page becomes visible again
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            // Page is now visible, reset button states
+            resetAllButtonStates();
+        }
+    });
+    
+    // Also reset button states when page loads (in case of back button)
+    window.addEventListener('pageshow', function(event) {
+        // Reset button states when page is shown (including back button)
+        resetAllButtonStates();
+    });
+    
+    // Reset button states when page focus is regained
+    window.addEventListener('focus', function() {
+        resetAllButtonStates();
+    });
+}
+
+// Set active navigation based on current page
+function setActiveNavigation() {
+    const currentPage = window.location.pathname.split('/').pop();
+    const pageMap = {
+        'Dashboard.html': 'dashboard',
+        'mstudent.html': 'students',
+        'mteachers.html': 'teachers',
+        'Mcources.html': 'courses',
+        'mtime.html': 'timetable',
+        'mfeedback.html': 'feedback',
+        'settings.html': 'settings'
+    };
+    
+    const currentPageType = pageMap[currentPage];
+    if (currentPageType) {
+        // Remove active class from all links
+        const allLinks = document.querySelectorAll('.sidebar nav ul li a');
+        allLinks.forEach(link => link.classList.remove('active'));
+        
+        // Add active class to current page link
+        const activeLink = document.querySelector(`.sidebar nav ul li a[data-page="${currentPageType}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
+        }
+    }
+}
+
+// Global function to reset button states (can be called from anywhere)
+window.resetDashboardButtons = function() {
+    resetAllButtonStates();
+};
 
 // Logout function
 function logout() {

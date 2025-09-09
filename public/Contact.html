@@ -36,9 +36,37 @@
         <p>Give feedback about your experience with EduNova</p>
 
         <form class="feedback-form" id="feedbackForm">
-          <input type="text" placeholder="Your Name" required>
-          <textarea placeholder="Your Comment" required></textarea>
-          <button type="submit">Submit</button>
+          <input type="text" id="feedbackName" placeholder="Your Name" required>
+          <input type="email" id="feedbackEmail" placeholder="Your Email" required>
+          <select id="feedbackType" required>
+            <option value="general">General Feedback</option>
+            <option value="course">Course Related</option>
+            <option value="teacher">Teacher Related</option>
+            <option value="facility">Facility Related</option>
+            <option value="suggestion">Suggestion</option>
+            <option value="complaint">Complaint</option>
+          </select>
+          <div class="rating-container">
+            <label>Rating:</label>
+            <div class="star-rating">
+              <input type="radio" id="star5" name="rating" value="5" checked>
+              <label for="star5">★</label>
+              <input type="radio" id="star4" name="rating" value="4">
+              <label for="star4">★</label>
+              <input type="radio" id="star3" name="rating" value="3">
+              <label for="star3">★</label>
+              <input type="radio" id="star2" name="rating" value="2">
+              <label for="star2">★</label>
+              <input type="radio" id="star1" name="rating" value="1">
+              <label for="star1">★</label>
+            </div>
+          </div>
+          <textarea id="feedbackMessage" placeholder="Your Comment" required></textarea>
+          <label class="checkbox-label">
+            <input type="checkbox" id="isAnonymous">
+            Submit anonymously
+          </label>
+          <button type="submit">Submit Feedback</button>
         </form>
 
         <!-- Dynamic Feedbacks will appear here -->
@@ -99,41 +127,115 @@ const feedbackContainer = document.getElementById('dynamic-feedbacks');
 
 async function loadFeedbacks() {
   try {
-    const res = await fetch('/api/feedback');
-    const feedbacks = await res.json();
+    const res = await fetch('/api/feedback?limit=5');
+    const data = await res.json();
+    const feedbacks = data.feedbacks || [];
 
     feedbackContainer.innerHTML = '';
+
+    if (feedbacks.length === 0) {
+      feedbackContainer.innerHTML = '<p class="no-feedback">No feedback available yet. Be the first to share your experience!</p>';
+      return;
+    }
 
     feedbacks.forEach(fb => {
       const div = document.createElement('div');
       div.className = 'testimonial dynamic';
-      div.innerHTML = `<p>"${fb.message}"</p><p class="author">- ${fb.name}</p>`;
+      
+      // Create star rating display
+      const stars = '★'.repeat(fb.rating) + '☆'.repeat(5 - fb.rating);
+      
+      div.innerHTML = `
+        <div class="feedback-header">
+          <div class="feedback-rating">${stars}</div>
+          <div class="feedback-type">${fb.feedback_type.charAt(0).toUpperCase() + fb.feedback_type.slice(1)}</div>
+        </div>
+        <p>"${fb.message}"</p>
+        <p class="author">- ${fb.is_anonymous ? 'Anonymous' : fb.name}</p>
+        <div class="feedback-date">${new Date(fb.created_at).toLocaleDateString()}</div>
+      `;
       feedbackContainer.appendChild(div);
     });
   } catch (err) {
     console.error('Failed to load feedbacks', err);
+    feedbackContainer.innerHTML = '<p class="error-message">Failed to load feedbacks. Please try again later.</p>';
   }
 }
 
 form.addEventListener('submit', async e => {
   e.preventDefault();
-  const name = form.querySelector('input').value;
-  const message = form.querySelector('textarea').value;
+  
+  const name = document.getElementById('feedbackName').value;
+  const email = document.getElementById('feedbackEmail').value;
+  const message = document.getElementById('feedbackMessage').value;
+  const feedbackType = document.getElementById('feedbackType').value;
+  const rating = document.querySelector('input[name="rating"]:checked').value;
+  const isAnonymous = document.getElementById('isAnonymous').checked;
+
+  // Show loading state
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Submitting...';
+  submitBtn.disabled = true;
 
   try {
-    await fetch('/api/feedback', {
+    const response = await fetch('/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, message })
+      body: JSON.stringify({ 
+        name, 
+        email, 
+        message, 
+        feedback_type: feedbackType,
+        rating: parseInt(rating),
+        is_anonymous: isAnonymous
+      })
     });
 
-    form.reset();
-    loadFeedbacks(); // refresh only newest 2 feedbacks
+    const result = await response.json();
+
+    if (response.ok) {
+      // Show success message
+      const successDiv = document.createElement('div');
+      successDiv.className = 'success-message';
+      successDiv.textContent = 'Thank you for your feedback! It has been submitted successfully.';
+      form.insertBefore(successDiv, form.firstChild);
+      
+      // Remove success message after 5 seconds
+      setTimeout(() => {
+        if (successDiv.parentNode) {
+          successDiv.parentNode.removeChild(successDiv);
+        }
+      }, 5000);
+
+      form.reset();
+      loadFeedbacks(); // refresh feedbacks
+    } else {
+      throw new Error(result.message || 'Failed to submit feedback');
+    }
   } catch (err) {
     console.error('Error submitting feedback', err);
+    
+    // Show error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = 'Failed to submit feedback. Please try again.';
+    form.insertBefore(errorDiv, form.firstChild);
+    
+    // Remove error message after 5 seconds
+    setTimeout(() => {
+      if (errorDiv.parentNode) {
+        errorDiv.parentNode.removeChild(errorDiv);
+      }
+    }, 5000);
+  } finally {
+    // Reset button state
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
   }
 });
 
+// Load feedbacks when page loads
 loadFeedbacks();
 </script>
 </body>
