@@ -54,5 +54,37 @@
             </div>
         </div>
     </div>
+<script>
+  document.querySelector('.login-button').addEventListener('click', async () => {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!username || !password) {
+      alert('Please enter username and password');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Login successful! Redirecting...');
+        // Redirect to dashboard page, e.g.
+        // window.location.href = '/admin/dashboard.html';
+      } else {
+        alert(data.message || 'Login failed');
+      }
+    } catch (error) {
+      alert('Error connecting to server');
+      console.error(error);
+    }
+  });
+</script>
 </body>
 </html>
